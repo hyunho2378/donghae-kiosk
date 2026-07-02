@@ -1,21 +1,31 @@
-// 강사용 개인별 기록 조회 (PROMPT 08 목업 → PROMPT 09 실제 API 연동)
-// 파일명은 유지(다른 곳에서 이 경로로 import 중). 함수 시그니처(getRecordsList/getRecordDetail)와
-// 반환 shape은 그대로라 RecordsList.jsx/RecordDetail.jsx는 손댈 필요 없음.
-// 실제 엔드포인트: server/routes/records.js (server/schema.sql 기준 Neon 쿼리).
+// 강사용 개인별 기록 조회 (PROMPT 08 목업 → PROMPT 09 실제 API → FIX-M 다시 프론트 고정 데이터)
+// Express 서버가 Vercel에 배포되지 않아 /api/records가 404 나므로, 데모 목적상 dummyRecords.js
+// (FIX-L, 10명)를 다시 직접 반환한다. server/routes/records.js·db.js·seed.js·migrate.js는 삭제하지
+// 않고 보존(나중에 실제 DB 연결 시 재사용). 함수 시그니처·반환 shape은 그대로 유지.
 
-async function request(path) {
-  const res = await fetch(path)
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(body.error || `요청 실패 (${res.status})`)
+import { dummyRecords } from '../data/dummyRecords.js'
+
+function summarize(person) {
+  const lastVisit = person.visits[person.visits.length - 1]
+  const stuckSteps = lastVisit.stepLogs.filter((s) => s.stuck)
+  const lastStatusSummary =
+    stuckSteps.length === 0
+      ? '막힘 없이 완료'
+      : `최근 막힘 ${stuckSteps[stuckSteps.length - 1].screenLabel}`
+  return {
+    identifier: person.identifier,
+    service: person.service,
+    visitCount: person.visits.length,
+    firstVisitDate: person.visits[0].date,
+    lastVisitDate: lastVisit.date,
+    lastStatusSummary,
   }
-  return res.json()
 }
 
 export async function getRecordsList() {
-  return request('/api/records')
+  return dummyRecords.map(summarize)
 }
 
 export async function getRecordDetail(identifier) {
-  return request(`/api/records/${encodeURIComponent(identifier)}`)
+  return dummyRecords.find((p) => p.identifier === identifier) ?? null
 }

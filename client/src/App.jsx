@@ -25,6 +25,7 @@ import M6_VerificationDone from './components/kiosk/modals/M6_VerificationDone.j
 import M13_Printing from './components/kiosk/modals/M13_Printing.jsx'
 import DashboardPanel from './components/dashboard/DashboardPanel.jsx'
 import AIPanel from './components/ai-panel/AIPanel.jsx'
+import RecordsView from './components/records/RecordsView.jsx'
 
 // 화면 ID → 대시보드 단계명 (S12는 AI 목업 screenLabel과 동일하게 "수수료 투입 및 발급")
 const SCREEN_LABELS = {
@@ -52,6 +53,7 @@ function App() {
   const eventCounterRef = useRef(0)
   const idleDeadlineRef = useRef(0)
   const [warnSeconds, setWarnSeconds] = useState(null)
+  const [rightView, setRightView] = useState('live') // 'live' | 'records' (FIX-M: 우측 영역 전체 전환)
 
   const selectedEvent =
     eventsState.events.find((e) => e.id === eventsState.selectedId) ?? null
@@ -372,24 +374,30 @@ function App() {
           </div>
         </div>
 
-        {/* 우측: 대시보드(상단) + AI 패널(하단) */}
+        {/* 우측: 대시보드(상단)+AI 패널(하단), 또는 개인별 기록(전체) — FIX-M */}
         <div
           className="flex flex-col"
           style={{ width: layout.rightPanelWidth, height: layout.kioskPanelHeight }}
         >
-        <div style={{ height: layout.dashboardHeight }}>
-          <DashboardPanel
-            events={visibleEvents}
-            selectedId={eventsState.selectedId}
-            onSelect={(id) => eventsDispatch({ type: 'SELECT_EVENT', id })}
-          />
-        </div>
-          <div
-            className="border-t border-dash-border"
-            style={{ height: layout.aiPanelHeight }}
-          >
-            <AIPanel selectedEvent={selectedEvent} dispatch={eventsDispatch} />
-          </div>
+          {rightView === 'live' ? (
+            <>
+              <div style={{ height: layout.dashboardHeight }}>
+                <DashboardPanel
+                  events={visibleEvents}
+                  selectedId={eventsState.selectedId}
+                  onSelect={(id) => eventsDispatch({ type: 'SELECT_EVENT', id })}
+                  onOpenRecords={() => setRightView('records')}
+                />
+              </div>
+              <div className="border-t border-dash-border" style={{ height: layout.aiPanelHeight }}>
+                <AIPanel selectedEvent={selectedEvent} dispatch={eventsDispatch} />
+              </div>
+            </>
+          ) : (
+            <div style={{ height: layout.dashboardHeight + layout.aiPanelHeight }}>
+              <RecordsView onBack={() => setRightView('live')} />
+            </div>
+          )}
         </div>
       </div>
     </div>

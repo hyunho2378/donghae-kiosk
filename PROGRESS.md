@@ -14,9 +14,25 @@
 
 ## 진행중
 
-- [ ] (다음 세션 대기 — 2회차 재방문 시뮬레이션(이전 막힘 지점 기억), PROMPT 09 선택 항목이던 "A 세션 실시간 DB 저장"은 시간 관계상 스킵. 둘 다 미착수)
+- [ ] (다음 세션 대기 — 2회차 재방문 시뮬레이션(이전 막힘 지점 기억), PROMPT 09 선택 항목이던 "A 세션 실시간 DB 저장"은 시간 관계상 스킵. 둘 다 미착수. NeonDB 실연결은 FIX-M에서 다시 프론트 고정으로 되돌림 — server/ 파일은 보존되어 있어 나중에 재개 가능)
 
-## 완료 (FIX-L: 개인별 기록 더미데이터 10명으로 다양화)
+## 완료 (FIX-M: 개인별 기록 고정 데모데이터 전환 + 진입 버튼 분리 배치)
+
+### 1 데이터 소스를 프론트 고정값으로 되돌림
+- [x] mockRecordsClient.js: `fetch('/api/records'...)` 제거 → `dummyRecords.js`(FIX-L 10명) 직접 반환으로 복귀. 함수 시그니처(getRecordsList/getRecordDetail)·반환 shape(service 필드 포함) 그대로 유지 — RecordsList/RecordDetail/RecordCard 등 하위 컴포넌트 코드 변경 없음
+- [x] server/db.js, migrate.js, seed.js, routes/records.js, schema.sql **삭제하지 않고 보존**(나중에 재연결용). 클라이언트 번들에 `fetch(` 호출 0건, `api/records` 문자열 0건 확인(빌드 산출물 grep)
+- [x] RecordsList.jsx/RecordDetail.jsx의 로딩/에러 UI(PROMPT 09)는 그대로 둠(즉시 resolve라 사실상 안 보이지만 무해, 지시대로 굳이 제거 안 함)
+
+### 2 진입 버튼을 탭에서 독립 버튼으로
+- [x] DashboardPanel.jsx: 탭(RecordsTabToggle) 제거, 헤더에 타이틀+"개인별 기록 보기" 독립 버튼(`dash-primary` 테두리+흰 배경+`Users` 아이콘, `dash-select` hover) 배치. 클릭은 `onOpenRecords` 콜백으로 App에 위임
+- [x] App.jsx: `rightView`('live'|'records') state 추가. live면 기존 DashboardPanel(600)+AIPanel(400) 그대로, records면 우측 영역 전체(600+400=1000)를 RecordsView 하나가 차지
+- [x] RecordsView.jsx 신규: "실시간 현황으로 돌아가기" 버튼 + "개인별 기록" 타이틀 + 목록↔상세 내비게이션(selectedIdentifier state, 기존 DashboardPanel이 갖고 있던 로직 이관). RecordsList/RecordDetail/도넛/라인/타임라인 컴포넌트 자체는 구조 변경 없이 그대로 재사용
+- [x] RecordsTabToggle.jsx **삭제**(이번 변경으로 완전히 orphan되어 삭제 — CLAUDE.md "내 변경이 만든 미사용 코드는 정리" 원칙)
+
+### 검증
+- [x] npm run build 통과(1846 modules). node로 mockRecordsClient가 10명 즉시 반환·service 필드 포함·FIX-L 데이터와 완전 일치함을 재확인, 존재하지 않는 식별자 조회 시 null 반환 확인
+- [x] dev 200(서버 없이 클라이언트 단독 기동으로도 정상 — Vercel에서 Express 없이도 동작함을 방증)
+- [x] 실시간 대시보드(A~F 시뮬레이션)·AI 분석 패널 로직 미변경(EventList/EventItem/AIPanel 등 파일 무변경), 도넛/라인/타임라인 컴포넌트 무변경. COMPONENTS.md 갱신(DashboardPanel/records 섹션 설명 반영)
 
 ### 1~2 서비스 다양화 + 10명 구성
 - [x] dummyRecords.js 전면 재작성: FIX-C GENERIC_STEPS(simulatedSeniors.js와 동일 key/label: GEN_MENU/ID/FINGERPRINT/OPTION/FEE/DONE) 재사용 + 졸업증명서는 기존 S3~S12 유지. 인물마다 `service` 필드 추가(person 단위 고정, makePerson(identifier, service, visits))
