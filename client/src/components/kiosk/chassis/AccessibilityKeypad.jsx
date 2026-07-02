@@ -20,7 +20,7 @@ function AccessibilityKeypad() {
       <HardwareLabel>시각장애인키보드</HardwareLabel>
       <div
         className="flex gap-3 rounded-md p-3"
-        style={{ backgroundColor: chassisColors.bodyLight }}
+        style={{ backgroundColor: chassisColors.glossBlack }}
       >
         {/* 숫자부 */}
         <div className="grid grid-cols-3 gap-1.5">

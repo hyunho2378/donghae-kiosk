@@ -16,6 +16,45 @@
 
 - [ ] (다음 세션에서 PROMPT 08 시작 — 2회차 재방문 시뮬레이션: 이전 막힘 지점 기억)
 
+## 완료 (FIX-H: 기기 섀시 전면 교체 — 실물 동해시청 발급기, 검정 몸체. 스크린 화면 미변경)
+
+### 색/토큰
+- [x] chassisColors 전면 교체: bodyMain #0F0F10(+bodyGradTop/Bottom 옅은 그라데이션), labelBorder 연두 #B7C94A→흰 #FFFFFF, neonAccent #FF3B5C, baseSilver/baseSilverDark, yellowReturn #F2C230, displayRed #FF3B3B, canopy/canopyEdge/canopyText, stickerBlue. 폐기: bodyLight/bodyDark/panelInset/returnBlue/bodyBottom/redLed. redButton/redactBar는 증명서 목업용 유지
+- [x] layout: deviceBottomHeight 폐기 → canopyHeight 52 / bandHeight 150 / baseHeight 230 (deviceTopHeight 956 유지)
+
+### 구조(위→아래)
+- [x] Canopy(신규): 은/흰 캐노피 + 검정 800 "무인민원 발급창구"
+- [x] 본체: 스크린 컬럼 + 우측 하드웨어 컬럼(신규 MoneyDisplay 빨간 7세그 "0" / CashInput 지폐투입구+동전레버 / ReturnButton 노란 원형+반환레버 / CardReader 은색 세로슬롯 재스킨 / QRScanner 신규)
+- [x] 띠(신규 band): CertificateOutlet(재스킨 — 빨간 »»» 화살표 + 와이드 슬롯 빨간 네온 링, 프린터 라벨) 좌 + FingerprintScanner(재스킨 — 흰/은색 원형 장치 + 빨간 네온 링, 라벨 "지문확인") 중앙
+- [x] 은색 받침대: ReceiptSlot/InfoSticker(신규 1577-XXXX)/AccessibilityKeypad(트레이 재스킨)/EarphoneJack 재배치
+- [x] 제거: RedButton/GlossPanel/PaymentModule/ChangeTray 파일 삭제 + import 정리. HardwareLabel은 labelBorder 토큰만 바뀌어 전 라벨 흰 테두리로 일괄 반영
+
+### 지문 이동 + 줌인 프레이밍(핵심 검증)
+- [x] FingerprintScanner 하단 중앙 띠로 이동, S5 클릭→0.8초 스캔→onScanComplete(M6) 로직 그대로 유지
+- [x] KioskCamera SCREEN_SCALE = 카메라높이 / (캐노피+본체+띠) = 956/1158 = 0.826. node 검증: 띠 device-y 1008~1158 ⊂ 줌인 가시범위 0~1158 → 지문확인 줌인에도 보임 ✓. FULL_SCALE 0.675
+- [x] 검정 몸체 + 카메라 배경 bodyMain(검정)이라 줌인 좌우 여백(≈91px)이 몸체와 자연스레 이어짐(카메라 로직 자체 미변경, 프레이밍 범위만 조정)
+- [x] 종이 출력: CertificateOutlet 슬롯 아래 클립(z-20) 유지 → 새 슬롯에서 종이 나옴, 기존 타이밍/PaperReceiveOverlay 연출 그대로
+
+### 검증
+- [x] npm run build 통과. 폐기 색키(bodyLight 등)·삭제 컴포넌트 잔존 0건. 스크린(S1~S13)에 chassis 참조 없음(화면 미변경)
+- [x] dev 200, 콘솔 에러 없음. DESIGN.md 섀시 팔레트/구조 갱신
+
+## 완료 (FIX-G: 도움말 오버레이 확대 + 강조링 실선 점멸 — 도움말 요소만)
+
+### 1 HelpOverlay 확대 + 검정 텍스트
+- [x] 텍스트 dash-body(14/400)→신규 help-text(22px/700). 색 help-bubble-text #5A4B00→#111111(검정, 대비)
+- [x] 배경 help-bubble-bg #FFF7D6→#FFE58A(조금 더 진한 노랑, 톤 유지). 테두리 help-bubble-border 유지
+- [x] 말풍선 패딩 px-5 py-3→px-6 py-5, Lightbulb 20→28, 폭 max-w-[600px]→w-full max-w-[680px](스크린 폭 70%+). 위치 하단 중앙(bottom-6) 유지, 잘림 없음
+### 2 강조링 점선→실선+점멸
+- [x] HELP_RING_CLASS: outline-2 outline-dashed → outline-[3px](실선 3px) + help-ring-blink. help-ring 색(#EAB308) 유지
+- [x] index.css help-ring-blink 키프레임: outline-color 1↔0.4(#eab308↔#eab30866), 1s ease-in-out infinite. 8개 강조 대상(S1/S3=KioskTopBar/S4/S5=FingerprintScanner/S7/S9/S10/S12) 자동 반영
+### 3 범위
+- [x] 도움말 OFF 시 무렌더 유지(App 조건 그대로), 화면은 두 모드 동일. 섀시/대시보드/AI/키오스크 화면 미변경. 힌트 문구(helpHints 텍스트) 불변
+
+### 검증
+- [x] npm run build 통과. 생성 확인: text-help-text 22px/700, bg-help-bubble-bg rgb(255 229 138), text-help-bubble-text rgb(17 17 17), outline-[3px] 3px, @keyframes help-ring-blink(#eab308↔#eab30866). outline-dashed 잔존 0건
+- [x] DESIGN.md help 팔레트/모드 원칙 갱신. dev 200, 콘솔 에러 없음
+
 ## 완료 (FIX-F: S1 메인화면 실물 재현 — 검정 배경 + 흰 글자, S1 전용)
 
 ### 1 배경/기본 색

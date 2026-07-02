@@ -36,10 +36,10 @@ export const colors = {
   },
   // 도움말 모드(PROMPT 07) — 시뮬레이터 오버레이용. 키오스크 화면 자체엔 안 쓴다.
   help: {
-    'bubble-bg': '#FFF7D6', // 말풍선 노란 배경
+    'bubble-bg': '#FFE58A', // 말풍선 노란 배경(FIX-G: 조금 더 진하게, 존재감↑)
     'bubble-border': '#F5C518', // 말풍선 테두리
-    'bubble-text': '#5A4B00', // 말풍선 어두운 텍스트
-    ring: '#EAB308', // 목표 요소 노란 점선 강조
+    'bubble-text': '#111111', // 말풍선 텍스트·아이콘(FIX-G: 검정, 대비 우선)
+    ring: '#EAB308', // 목표 요소 노란 실선 강조링
   },
 }
 
@@ -62,6 +62,7 @@ export const fontSize = {
   'kiosk-keypad': ['22px', { lineHeight: '1.2', fontWeight: '500' }],
   'kiosk-watermark': ['38px', { lineHeight: '1', fontWeight: '700' }], // S1 "무인민원발급기" 워터마크(FIX-F)
   'kiosk-cash': ['15px', { lineHeight: '1.2', fontWeight: '600' }], // S1 현금가능/카드가능 라벨(FIX-F)
+  'help-text': ['22px', { lineHeight: '1.4', fontWeight: '700' }], // 도움말 말풍선 텍스트(FIX-G: 시니어 가독성, 이 값 아래로 X)
   'dash-heading': ['18px', { lineHeight: '1.4', fontWeight: '700' }],
   'dash-body': ['14px', { lineHeight: '1.5', fontWeight: '400' }], // 키오스크 도움말 말풍선 등 비대시보드용
   'dash-small': ['12px', { lineHeight: '1.4', fontWeight: '400' }], // 컨트롤바/키오스크용(비대시보드)
@@ -126,26 +127,36 @@ export const layout = {
   aiPanelHeight: 400, // 우측 하단 AI 분석 (FIX-C, 500→400)
   deviceFrameMaxHeight: 920,
   deviceFrameWidth: 690,
-  deviceTopHeight: 956, // 기기 상단부 자연 높이 = 카메라 가용 높이(1000-44) → 줌인 시 폭/높이 꽉 채움 (FIX-C)
-  deviceBottomHeight: 480, // 기기 하단부(증명서 출구/시각장애인키보드/거스름돈) 높이 (FIX-B 축소)
+  deviceTopHeight: 956, // 본체(스크린 컬럼 + 우측 하드웨어 컬럼) 높이
+  // FIX-H 실물 세로 구성: 캐노피 + 본체 + 증명서/지문 띠 + 은색 받침대
+  canopyHeight: 52, // 상단 캐노피("무인민원 발급창구")
+  bandHeight: 150, // 증명서 출구 + 지문확인 띠(스크린 바로 아래)
+  baseHeight: 230, // 최하단 은색 받침대(영수증/스티커/시각장애인키보드/이어폰)
   controlBarHeight: 44, // 좌측 최상단 데모 컨트롤 바 높이 (PROMPT 07)
 }
 
-// 키오스크 하드웨어 섀시 색상 (PROMPT 05 — 실물 기기 재현, 전부 CSS/SVG)
+// 키오스크 하드웨어 섀시 색상 (FIX-H — 실물 동해시청 무인민원발급기: 검정 몸체, 전부 CSS/SVG)
 export const chassisColors = {
-  bodyLight: '#9EA3AB', // 금속 몸체 밝은 부분(세로 그라데이션 양끝)
-  bodyDark: '#7E838C', // 금속 몸체 어두운 부분(그라데이션 중앙)
-  panelInset: '#5A5E66', // 음각 패널 배경
-  labelBg: '#111111', // 라벨 알약 배경
-  labelBorder: '#B7C94A', // 라벨 연두 테두리
+  bodyMain: '#0F0F10', // 검정 몸체 기본
+  bodyGradTop: '#1A1A1C', // 몸체 세로 그라데이션 위(옅은 광택)
+  bodyGradBottom: '#0B0B0C', // 몸체 세로 그라데이션 아래
+  bodyGloss: 'rgba(255,255,255,0.06)', // 광택 하이라이트(gradient용)
+  labelBg: '#111111', // 라벨 알약 배경(검정)
+  labelBorder: '#FFFFFF', // 라벨 흰 테두리(FIX-H: 연두 폐기)
   labelText: '#FFFFFF', // 라벨 흰 글씨
-  metalSilver: '#C7CBD1', // 은색 금속(투입구/슬롯)
-  glossBlack: '#0D0D0D', // 검정 광택 패널
-  redButton: '#C0392B', // 상단 빨간 장식 버튼 / 종이 직인
-  returnBlue: '#2563EB', // 반환버튼 파란 원 / 지문 스캔 라인
-  bodyBottom: '#2E2E30', // 하단 몸체(상단보다 어두운 차콜)
-  redLed: '#E74C3C', // 증명서 출구 빨간 LED
-  redactBar: '#C4C8CE', // 종이 개인정보 가림 회색 바
+  neonAccent: '#FF3B5C', // 빨강/핑크 네온(증명서 출구·지문확인 링/화살표)
+  baseSilver: '#B8BCC2', // 하단 받침대 은색(밝은쪽)
+  baseSilverDark: '#8A8F98', // 받침대 은색 그라데이션 어두운쪽
+  yellowReturn: '#F2C230', // 노란 원형 반환 버튼
+  displayRed: '#FF3B3B', // 현재 금액 7세그먼트 빨강 숫자
+  metalSilver: '#C7CBD1', // 은색 금속(슬롯/레버/카드리더/지문 링)
+  glossBlack: '#0D0D0D', // 검정 광택(슬롯 홈/QR·지문 하우징)
+  canopy: '#E8EAED', // 상단 캐노피 은/흰 패널
+  canopyEdge: '#B7BCC4', // 캐노피 하단 음영(입체)
+  canopyText: '#111111', // 캐노피 검정 굵은 글씨
+  stickerBlue: '#1C3D6E', // 하단 받침대 안내 스티커(파란/검정 톤)
+  redButton: '#C0392B', // 종이 직인(증명서 목업 CertificateCard 전용, 유지)
+  redactBar: '#C4C8CE', // 종이 개인정보 가림 회색 바(CertificateCard, 유지)
 }
 
 export const modalDim = 'rgba(0, 0, 0, 0.35)'

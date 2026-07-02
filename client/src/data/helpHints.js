@@ -14,5 +14,7 @@ export const helpHints = {
   S12: { text: '발급 버튼을 눌러 주세요. 수수료는 무료입니다.', anchor: 'issue-button' },
 }
 
-// 목표 요소 노란 점선 강조 (각 화면/하드웨어가 highlight prop으로 자기 요소에 적용)
-export const HELP_RING_CLASS = 'outline outline-2 outline-dashed outline-offset-2 outline-help-ring'
+// 목표 요소 노란 실선 강조링 + 은은한 점멸 (각 화면/하드웨어가 highlight prop으로 자기 요소에 적용).
+// FIX-G: 점선 2px → 실선 3px, 1초 주기 opacity 점멸(help-ring-blink 키프레임은 index.css).
+export const HELP_RING_CLASS =
+  'outline outline-[3px] outline-offset-2 outline-help-ring help-ring-blink'

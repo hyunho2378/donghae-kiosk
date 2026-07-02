@@ -67,3 +67,13 @@ body {
 .badge-blink {
   animation: badge-blink 1.2s ease-in-out infinite;
 }
+
+/* 도움말 목표 강조링: 노란 실선 은은한 점멸(1↔0.4, 1초, ease-in-out). 색은 tokens help-ring(#EAB308). */
+@keyframes help-ring-blink {
+  0%, 100% { outline-color: rgba(234, 179, 8, 1); }
+  50% { outline-color: rgba(234, 179, 8, 0.4); }
+}
+
+.help-ring-blink {
+  animation: help-ring-blink 1s ease-in-out infinite;
+}
