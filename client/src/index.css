@@ -45,22 +45,6 @@ body {
   animation: paper-out 2s ease-out forwards;
 }
 
-/* 종이 수령(살짝 아래 + 페이드, 0.4초) — 정지 위치(-12%)에서 시작 */
-@keyframes paper-leave {
-  0% {
-    opacity: 1;
-    transform: translateY(-12%);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(20%);
-  }
-}
-
-.paper-leaving {
-  animation: paper-leave 0.4s ease-in forwards;
-}
-
 /* 막힘 전환 순간 좌우 흔들림 (0.4초 1회 전용, 남용 금지) */
 @keyframes card-shake {
   0%, 100% { transform: translateX(0); }

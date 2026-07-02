@@ -26,10 +26,13 @@ function advanceSim(e, now, demoStartAt) {
   const dwell = now - e.enteredAt
   const lastIndex = e.steps.length - 1
 
-  // 마지막 단계: 완료 시니어는 이미 done 처리됨. 막힘 시니어는 8초 후 막힘(계속 카운트).
+  // 마지막 단계: 완료 시니어는 이미 done 처리됨. 막힘 시니어는 8초에 막힘 확정.
   if (e.stepIndex >= lastIndex) {
-    const status = e.outcome === '막힘' && dwell >= stuckThresholdMs ? 'stuck' : e.status
-    return { ...e, elapsedMs: dwell, status }
+    if (e.status === 'stuck') return e // 이미 막힘 → 경과 고정(더 안 올라감)
+    if (e.outcome === '막힘' && dwell >= stuckThresholdMs) {
+      return { ...e, elapsedMs: dwell, status: 'stuck' } // 막힘 확정 순간의 경과로 고정
+    }
+    return { ...e, elapsedMs: dwell } // 아직 진행중 → 카운트업
   }
 
   // 중간 단계: timeline 체류 시간 경과 시 다음 단계로
@@ -66,9 +69,9 @@ function advanceSim(e, now, demoStartAt) {
 
 export function eventsReducer(state, action) {
   switch (action.type) {
-    // 화면 진입 시 실제 이벤트 생성 (이미 활성 이벤트가 있으면 중복 생성 방지)
+    // 화면 진입 시 실제 세션(A) 이벤트 생성.
+    // A 행은 항상 정확히 1개 — 기존 real 행을 제거하고 새 행으로 교체(누적 금지, FIX-D).
     case 'CREATE_EVENT': {
-      if (state.activeEventId != null) return state
       const event = {
         ...action.event,
         kind: 'real',
@@ -77,7 +80,8 @@ export function eventsReducer(state, action) {
         analysisStatus: 'idle',
         analysis: null,
       }
-      return { ...state, events: [...state.events, event], activeEventId: event.id }
+      const withoutReal = state.events.filter((e) => e.kind !== 'real')
+      return { ...state, events: [...withoutReal, event], activeEventId: event.id }
     }
 
     // 화면 전환 시 같은 이벤트를 새 화면으로 갱신: 8초 타이머 재시작 + 분석 캐시 초기화
@@ -108,10 +112,11 @@ export function eventsReducer(state, action) {
       const demoStartAt = state.demoStartAt ?? now
       const events = state.events.map((e) => {
         if (e.kind === 'sim') return advanceSim(e, now, demoStartAt)
-        // 실제 세션(A): 활성 이벤트만, 완료는 갱신 안 함
-        if (e.id !== state.activeEventId || e.status === 'done') return e
+        // 실제 세션(A): 활성 이벤트가 '진행중'일 때만 카운트업.
+        // 막힘/완료가 되면 경과 고정(비현실적으로 계속 올라가지 않게 — FIX-D).
+        if (e.id !== state.activeEventId || e.status !== 'progress') return e
         const elapsedMs = now - e.enteredAt
-        const status = e.status === 'progress' && elapsedMs >= stuckThresholdMs ? 'stuck' : e.status
+        const status = elapsedMs >= stuckThresholdMs ? 'stuck' : 'progress'
         return { ...e, elapsedMs, status }
       })
       return { ...state, events, demoStartAt }
@@ -151,9 +156,14 @@ export function eventsReducer(state, action) {
     case 'SELECT_EVENT':
       return { ...state, selectedId: action.id }
 
-    // 세션 이탈(처음으로/S1 복귀) 시 활성 이벤트 해제 → 다음 진입 때 새 이벤트 생성
+    // 세션 이탈(처음으로/S1 복귀) 시 활성 이벤트 해제 → 다음 진입 때 A 행 교체
     case 'CLEAR_ACTIVE':
       return { ...state, activeEventId: null }
+
+    // 전체 초기화(시뮬레이터 버튼/새로고침): A 행 제거 + B~F 시뮬레이션도 startDelay부터 재시작.
+    // initialEventsState.events는 원본 시니어(appeared:false)라 그대로 반환하면 처음 상태로 복귀.
+    case 'RESET_ALL':
+      return { ...initialEventsState }
 
     default:
       return state

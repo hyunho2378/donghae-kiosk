@@ -16,6 +16,64 @@
 
 - [ ] (다음 세션에서 PROMPT 08 시작 — 2회차 재방문 시뮬레이션: 이전 막힘 지점 기억)
 
+## 완료 (FIX-F: S1 메인화면 실물 재현 — 검정 배경 + 흰 글자, S1 전용)
+
+### 1 배경/기본 색
+- [x] tokens.js colors.kiosk에 main-bg #0A0A0A / main-bar #000000(상단바) / main-accent-blue #5BA3E8 추가(하이픈 키로 파일 컨벤션 통일)
+- [x] S1 배경 bg-kiosk-white→bg-kiosk-main-bg(검정). 안내문 gray-text→white. 타이틀 노랑 유지
+### 2 증명서 버튼 9개(아웃라인)
+- [x] KioskButton(공유, S3~S13 사용) 대신 S1 로컬 버튼으로 렌더(공유 컴포넌트 미변경). 투명 배경 + border-kiosk-white 1px + rounded-kiosk-card(신규 8px) + 흰 글자. min-h-[76px]/문구/2열/클릭로직 유지(졸업증명서만 동작). cursor-pointer 9개 균일(IA.md 구분 없음)
+### 3 상단 티커 바(S1 전용)
+- [x] KioskFrame에 mainScreen prop 추가 → true일 때만 MainTickerBar(좌 재생/정지 알약 + 중앙 안내 + 우 29/시간연장 알약, 전부 장식 span). false면 기존 간단 바 그대로(S3~S13 바이트 동일). 바 배경 main-bar(#000, 스크린보다 약간 어둡게)
+- [x] KioskDevice/App에 mainScreen 배선(session.step==='S1'). lucide Play/Pause 사용
+### 4 처음으로(좌하단)
+- [x] 흰 테두리 알약(rounded-full) + 투명 배경 + 흰 글자 + Home 아이콘. onHome(S1 초기화) 유지, 좌하단 self-start
+### 5 하단 요소 3종
+- [x] 무인민원발급기 워터마크: 중앙, text-kiosk-watermark(신규 38px/700) + text-kiosk-white/80 반투명. 장식(그리드~하단 라벨 사이 flex-1 중앙)
+- [x] 현금가능·카드가능: 좌하단, text-kiosk-cash(신규 15px/600) + main-accent-blue(하늘색). 장식
+- [x] 휠체어 사용자 보기: 우하단, 흰 알약 + lucide Accessibility. 장식 span
+### 6 레이아웃
+- [x] flex-col + 하단 flex-1 영역으로 워터마크 중앙 배치. 그리드 gap-3 유지(세로 여유 충분, 조일 필요 없음). S1에 어두운 글자 토큰 0건(navy-header/gray-text/gray-border/bg-kiosk-white 잔존 없음)
+
+### 검증
+- [x] npm run build 통과(1833). 신규 클래스 생성·값 확인(main-bg rgb(10 10 10)/main-bar rgb(0 0 0)/main-accent-blue rgb(91 163 232)/watermark 38px700/white\/80 #fffc/rounded-kiosk-card/border-kiosk-white)
+- [x] S3~S13 미변경(공유 변경은 KioskFrame·KioskDevice의 mainScreen prop 추가뿐, default false로 기존 렌더 동일). KioskButton 미변경
+- [x] dev 200, 콘솔 에러 없음
+
+## 완료 (FIX-D: 대시보드 프로덕션급 정리 + 행 수 고정 + 종이 수령 연출 + 시간제한 20초)
+
+### FIX1 대시보드 디자인 정리(AI티 제거)
+- [x] 기본 카드 흰 배경 + 1px dash-border + radius 10px(dash-row) 통일. 완료 연초록 틴트 폐기
+- [x] 막힘 카드: 흰 배경 유지 + 1.5px 빨간 테두리(border-emphasis) + 좌측 안쪽 3px 빨간 액센트(borderWidth.accent, 절대배치 span). 틴트 없음
+- [x] 선택 카드: 1.5px 파란 테두리 + 옅은 파란 배경(dash-select #F5F8FF). 두꺼운 outline 제거
+- [x] 상태: 알약 채움 뱃지 폐기 → 8px dot + 13px 700 텍스트(dash-label). 진행중 dot만 badge-blink
+- [x] 아바타: 원형→radius 10px 라운드 사각(36px). A=파랑, B~F=dash-avatar-bg+dash-text-strong. "실습" 마커 서비스명 오른쪽 12px 파랑으로 이동
+- [x] 타이포: 패널타이틀 20px 800, 서비스명 16px 700, 단계 14px 500/값 600(dash-step/step-strong, #4B5563), 진입 12px 500(dash-meta), AI 라벨 13px 700(dash-label), AI 본문 16px 700(dash-ai-body)
+- [x] DESIGN.md 대시보드 타이포에 "12px 미만 금지 / 400 웨이트 본문 금지(최소 500)" 규칙 추가. AIPanel/EmptyState 안내문 dash-body(400)→dash-note(500)
+
+### FIX2 행 수 고정(최대 6행, A 항상 1개)
+- [x] CREATE_EVENT가 기존 real 행을 제거하고 교체(누적 방지). activeEventId 가드 제거 → 항상 real 1개
+- [x] 막힘/완료 시 경과 카운트 정지: TICK 실제세션은 status==='progress'일 때만 갱신, advanceSim 막힘 last-step은 8초 확정 시 고정 후 return e
+- [x] RESET_ALL 액션: 시뮬레이터(홈) 버튼/새로고침 시 A 제거 + B~F startDelay부터 재시작(initialEventsState 반환). handleSimulatorReset가 session RESET + events RESET_ALL + ref 초기화
+- [x] DashboardPanel overflow-y-auto→overflow-hidden(px-1.5), EventList gap 8→10px(gap-2.5). 카드 패딩 py-3.5 px-4
+- [x] node 검증: 시뮬 0~300초 틱 동안 경과 2분 초과 0건(막힘 8s·완료 8~12s 고정 관측)
+
+### FIX3 시간제한 20초
+- [x] timing.idleResetMs 30000→20000. 경고는 기존 마지막 10초 로직 그대로(코드 변경 없음)
+
+### FIX4 종이 수령 연출(클릭→중앙 확대→유지→소멸)
+- [x] session issuePhase에 'receiving' 추가 + RECEIVE_START 액션(paperReady→receiving)
+- [x] CertificateCard.jsx 신규(표시 전용) — CertificatePaper(슬롯)와 PaperReceiveOverlay가 공유
+- [x] CertificatePaper: leaving/fade 로직 제거, 클릭 즉시 onReceive(=RECEIVE_START). 슬라이드 출력만
+- [x] PaperReceiveOverlay.jsx 신규: 좌측 영역 중앙 절대배치, rAF로 mount→scale 0.85→1.8+translateY 이동(move 400ms ease-out, 그림자 커짐)→hold 1000ms→fade 300ms→onDone. 전부 tokens.timing
+- [x] onDone=handlePaperReceive(완료 처리+RECEIVE_PAPER). 카메라는 receiving 동안 'full' 유지→idle 복귀 시 줌인
+- [x] index.css paper-leave/paper-leaving 제거(미사용). scale 예외 3호 DESIGN.md 등록
+
+### 검증
+- [x] npm run build 통과(1834 modules). 신규 클래스 생성 확인(border-emphasis/rounded-dash-row/bg-dash-select/gap-2.5/py-3.5/text-dash-label 등)
+- [x] node verify_fixd.mjs 24/24 pass(A행 단일·경과고정·RESET_ALL·2분 초과 없음·종이 상태흐름)
+- [x] dev 200, 콘솔 에러 없음
+
 ## 완료 (FIX-C: 좌측 줌/타이밍 + 우측 강사용 대시보드 전면 개편)
 
 ### PART 1 좌측

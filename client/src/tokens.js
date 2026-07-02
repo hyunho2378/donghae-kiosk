@@ -12,6 +12,10 @@ export const colors = {
     'black-frame': '#1A1A1A',
     'alert-blue': '#2255CC',
     'yellow-title': '#F5C518', // S1 타이틀(원본 사진 재현)
+    // FIX-F: S1 메인화면 실물 재현(검정 배경 + 흰 글자). S1 전용, 다른 화면엔 안 씀.
+    'main-bg': '#0A0A0A', // S1 스크린 콘텐츠 배경(실물 순검정에 가까움)
+    'main-bar': '#000000', // S1 상단 티커 바(스크린 검정과 이어지되 약간 더 어둡게)
+    'main-accent-blue': '#5BA3E8', // S1 하단 현금가능/카드가능 하늘색
   },
   dash: {
     bg: '#F7F8FA',
@@ -24,7 +28,10 @@ export const colors = {
     'status-stuck': '#DC2626',
     'status-stuck-bg': '#FEF2F2',
     'status-done': '#16A34A',
-    'status-done-bg': '#F0FDF4', // 완료 카드 연초록 배경 (FIX-C)
+    'status-done-bg': '#F0FDF4', // (FIX-D부터 미사용 — 완료 카드 틴트 폐기). 하위호환 위해 키 유지
+    select: '#F5F8FF', // 선택 카드 옅은 파란 배경 (FIX-D)
+    'avatar-bg': '#E8EAEE', // 시뮬 시니어(B~F) 아바타 배경 (FIX-D)
+    'text-strong': '#4B5563', // 단계 텍스트·아바타 글자(진한 회색) (FIX-D)
     'sample-badge': '#6B7280', // 예시 항목 구분(회색). 보라색 폐기(FIX-A). 키는 하위호환 위해 유지
   },
   // 도움말 모드(PROMPT 07) — 시뮬레이터 오버레이용. 키오스크 화면 자체엔 안 쓴다.
@@ -53,20 +60,31 @@ export const fontSize = {
   'kiosk-body': ['17px', { lineHeight: '1.5', fontWeight: '400' }],
   'kiosk-button': ['18px', { lineHeight: '1.4', fontWeight: '600' }],
   'kiosk-keypad': ['22px', { lineHeight: '1.2', fontWeight: '500' }],
+  'kiosk-watermark': ['38px', { lineHeight: '1', fontWeight: '700' }], // S1 "무인민원발급기" 워터마크(FIX-F)
+  'kiosk-cash': ['15px', { lineHeight: '1.2', fontWeight: '600' }], // S1 현금가능/카드가능 라벨(FIX-F)
   'dash-heading': ['18px', { lineHeight: '1.4', fontWeight: '700' }],
-  'dash-body': ['14px', { lineHeight: '1.5', fontWeight: '400' }],
-  'dash-small': ['12px', { lineHeight: '1.4', fontWeight: '400' }],
-  'dash-ai-body': ['15px', { lineHeight: '1.6', fontWeight: '400' }],
-  'dash-panel-title': ['20px', { lineHeight: '1.3', fontWeight: '700' }], // 패널 타이틀 강화(FIX-B)
-  'dash-item-title': ['16px', { lineHeight: '1.4', fontWeight: '700' }], // 카드 단계명 강화(FIX-B)
+  'dash-body': ['14px', { lineHeight: '1.5', fontWeight: '400' }], // 키오스크 도움말 말풍선 등 비대시보드용
+  'dash-small': ['12px', { lineHeight: '1.4', fontWeight: '400' }], // 컨트롤바/키오스크용(비대시보드)
+  'dash-ai-body': ['16px', { lineHeight: '1.6', fontWeight: '700' }], // AI 원인/제안 본문(FIX-D 15→16, 볼드 내장)
+  'dash-panel-title': ['20px', { lineHeight: '1.3', fontWeight: '800' }], // 패널 타이틀(FIX-D 700→800)
+  'dash-item-title': ['16px', { lineHeight: '1.4', fontWeight: '700' }], // 서비스명·아바타 글자
   'dash-elapsed': ['30px', { lineHeight: '1', fontWeight: '700' }], // 경과초 큰 숫자(FIX-B)
+  // FIX-D 대시보드 카드 타이포 — 규칙: 12px 미만 금지, 400 웨이트 본문 금지(최소 500)
+  'dash-step': ['14px', { lineHeight: '1.4', fontWeight: '500' }], // "현재 단계:" 라벨
+  'dash-step-strong': ['14px', { lineHeight: '1.4', fontWeight: '600' }], // 단계 값 강조
+  'dash-meta': ['12px', { lineHeight: '1.4', fontWeight: '500' }], // 진입 시각/실습 마커
+  'dash-label': ['13px', { lineHeight: '1.3', fontWeight: '700' }], // 상태 텍스트/AI 라벨
+  'dash-note': ['14px', { lineHeight: '1.5', fontWeight: '500' }], // AI 패널 안내 본문
 }
 
-// 4pt 배수 간격 체계
+// 4pt 배수 간격 체계 (2pt 반단계 1.5/2.5/3.5는 FIX-D 카드 정밀 간격용)
 export const spacing = {
   1: '4px',
+  1.5: '6px', // 상태 dot 간격·스크롤 컨테이너 여백
   2: '8px',
+  2.5: '10px', // 카드 간 간격
   3: '12px',
+  3.5: '14px', // 카드 상하 패딩
   4: '16px',
   5: '20px',
   6: '24px',
@@ -77,7 +95,15 @@ export const spacing = {
 
 export const radius = {
   'kiosk-button': '4px',
+  'kiosk-card': '8px', // S1 증명서 버튼 아웃라인 라운드(FIX-F)
   'dash-card': '8px',
+  'dash-row': '10px', // 시니어 카드·아바타(FIX-D)
+}
+
+// 강조 테두리/액센트 폭 (FIX-D)
+export const borderWidth = {
+  emphasis: '1.5px', // 막힘·선택 카드 강조 테두리
+  accent: '3px', // 막힘 카드 좌측 세로 액센트
 }
 
 export const iconSize = {
@@ -129,11 +155,15 @@ export const timing = {
   modalServerConnecting: 1500, // M2 서버 접속 중
   modalVerificationDone: 1200, // M6 본인확인 완료
   modalPrinting: 1200, // M13 인쇄중 (FIX-C 단축)
-  idleResetMs: 30000, // 시간제한 모드: 무입력 30초 시 S1 초기화 (PROMPT 07)
+  idleResetMs: 20000, // 시간제한 모드: 무입력 20초 시 S1 초기화 (FIX-D 30→20, 경고는 마지막 10초)
   aiMockDelayMin: 600, // AI 목업 최소 딜레이(FIX-B, 단축)
   aiMockDelayMax: 1200, // AI 목업 최대 딜레이(FIX-B, 단축)
   cameraMs: 500, // 카메라 줌 전환(FIX-C, 0.9s→0.5s)
   paperSlideMs: 800, // 종이 슬라이드 출력(FIX-C, 2s→0.8s)
+  // FIX-D 종이 수령 연출: 클릭→중앙 이동+확대(move)→유지(hold)→소멸(fade)
+  paperReceiveMoveMs: 400,
+  paperHoldMs: 1000,
+  paperReceiveFadeMs: 300,
 }
 
 // IA.md: 동일 화면 8초 체류 시 '막힘' 전환

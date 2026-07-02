@@ -43,7 +43,7 @@ function AIPanel({ selectedEvent, dispatch }) {
     if (selectedEvent.status === 'progress') {
       return (
         <div className="flex h-full items-center justify-center px-4 text-center">
-          <p className="text-dash-body text-dash-text-secondary">
+          <p className="text-dash-note text-dash-text-secondary">
             아직 막힘이 감지되지 않았습니다
           </p>
         </div>
@@ -63,7 +63,7 @@ function AIPanel({ selectedEvent, dispatch }) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 text-dash-text-secondary">
         <Loader2 className="animate-spin" size={iconSize.lg} />
-        <p className="text-dash-body">AI 분석 중...</p>
+        <p className="text-dash-note">AI 분석 중...</p>
       </div>
     )
   }

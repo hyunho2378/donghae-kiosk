@@ -20,7 +20,7 @@ export const initialSessionState = {
   activeModal: null, // null | 'M2' | 'M6' | 'M13'
   idNumber: '', // S3 주민등록번호 최대 13자리 누적
   copies: 1, // S11 발급 부수 (S12에서 표시)
-  issuePhase: 'idle', // 발급 연출: 'idle' | 'printing' | 'paperReady'
+  issuePhase: 'idle', // 발급 연출: 'idle' | 'printing' | 'paperReady' | 'receiving'
 }
 
 export function sessionReducer(state, action) {
@@ -91,7 +91,12 @@ export function sessionReducer(state, action) {
     case 'PRINTING_DONE':
       return { ...state, activeModal: null, issuePhase: 'paperReady' }
 
-    // 종이 수령: 전체 초기화(줌인 복귀는 App에서 카메라 view로 처리)
+    // 종이 클릭: 수령 연출 시작(중앙 이동+확대). 슬롯 종이는 사라지고 App 오버레이가 이어받는다.
+    case 'RECEIVE_START':
+      if (state.issuePhase !== 'paperReady') return state
+      return { ...state, issuePhase: 'receiving' }
+
+    // 수령 연출 종료: 전체 초기화(줌인 복귀는 App에서 카메라 view로 처리)
     case 'RECEIVE_PAPER':
       return { ...initialSessionState }
 

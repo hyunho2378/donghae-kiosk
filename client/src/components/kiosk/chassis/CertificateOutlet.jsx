@@ -4,7 +4,7 @@ import { chassisColors } from '../../../tokens.js'
 import HardwareLabel from './HardwareLabel.jsx'
 import CertificatePaper from './CertificatePaper.jsx'
 
-function CertificateOutlet({ issuePhase, onPaperReceive }) {
+function CertificateOutlet({ issuePhase, onPaperClick }) {
   return (
     <div className="flex flex-col items-center gap-3">
       <HardwareLabel>증명서 나오는 곳</HardwareLabel>
@@ -47,7 +47,7 @@ function CertificateOutlet({ issuePhase, onPaperReceive }) {
         {issuePhase === 'paperReady' && (
           <div className="relative overflow-hidden" style={{ height: 300 }}>
             <div className="absolute inset-x-0 top-0 flex justify-center">
-              <CertificatePaper onReceive={onPaperReceive} />
+              <CertificatePaper onReceive={onPaperClick} />
             </div>
           </div>
         )}

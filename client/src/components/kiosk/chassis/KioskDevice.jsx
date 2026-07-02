@@ -20,7 +20,8 @@ function KioskDevice({
   onFingerprint,
   fingerprintHighlight,
   issuePhase,
-  onPaperReceive,
+  onPaperClick,
+  mainScreen = false,
 }) {
   return (
     <div
@@ -41,7 +42,7 @@ function KioskDevice({
       >
         {/* 스크린 컬럼 (약 70%) */}
         <div className="flex w-[700px] shrink-0 items-center justify-center">
-          <KioskFrame>{children}</KioskFrame>
+          <KioskFrame mainScreen={mainScreen}>{children}</KioskFrame>
         </div>
 
         {/* 하드웨어 컬럼 (약 30%, 실물 순서) */}
@@ -77,7 +78,7 @@ function KioskDevice({
       >
         {/* 증명서 나오는 곳 (좌측) */}
         <div className="flex-1">
-          <CertificateOutlet issuePhase={issuePhase} onPaperReceive={onPaperReceive} />
+          <CertificateOutlet issuePhase={issuePhase} onPaperClick={onPaperClick} />
         </div>
 
         {/* 시각장애인키보드(위) + 거스름돈(아래) (우측) */}

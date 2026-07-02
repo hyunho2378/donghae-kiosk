@@ -1,15 +1,16 @@
-// 시니어 카드 (FIX-C 전면 개편)
-// [문자 아바타] [서비스명 + 현재 단계/진입] [상태 뱃지] [큰 경과초]
-// - A(실제)=파란 아바타 + "실습" 마커, B~F=회색 아바타
-// - 진행중 뱃지 깜빡임 / 완료 연초록 배경+체크 / 막힘 전환 순간 shake 1회
-// - 경과초: 8초 미만 검정 → 8초 이상(진행중·막힘) 빨강, 200ms 전환 (완료는 제외)
-// - 카드 4변 동일 1px 테두리(FIX 7: 스크롤 컨테이너 좌측 여백으로 좌변 클립 방지)
+// 시니어 카드 (FIX-D — SaaS 관제 톤으로 정리)
+// [라운드 사각 아바타] [서비스명(+실습/완료체크) / 현재 단계·진입] [상태 dot+텍스트] [큰 경과초]
+// - 기본 카드: 흰 배경 + 1px 테두리 + radius 10px 통일(완료 틴트 폐기)
+// - 막힘 카드: 흰 배경 유지 + 1.5px 빨간 테두리 + 좌측 안쪽 3px 빨간 액센트(절제된 강조)
+// - 선택 카드: 1.5px 파란 테두리 + 옅은 파란 배경(dash-select)
+// - 경과초: 8초 이상(진행중·막힘) 빨강, 완료는 제외. 막힘/완료는 리듀서에서 고정됨.
+// - 막힘 전환 순간 1회 shake
 
 import { useEffect, useRef, useState } from 'react'
 import { CircleCheck } from 'lucide-react'
 import StatusBadge from './StatusBadge.jsx'
 import { formatClock, formatElapsed } from '../../lib/timer.js'
-import { stuckThresholdMs, iconSize } from '../../tokens.js'
+import { stuckThresholdMs, iconSize, borderWidth } from '../../tokens.js'
 
 function EventItem({ event, selected, onSelect }) {
   const { status } = event
@@ -29,48 +30,60 @@ function EventItem({ event, selected, onSelect }) {
   }, [status])
   useEffect(() => () => clearTimeout(shakeTimerRef.current), [])
 
-  const cardTone =
-    status === 'stuck'
-      ? 'border-dash-status-stuck bg-dash-status-stuck-bg'
-      : status === 'done'
-        ? 'border-dash-status-done bg-dash-status-done-bg'
-        : 'border-dash-border bg-dash-surface hover:bg-dash-bg'
-  const selectedTone = selected ? 'outline outline-2 outline-dash-primary' : ''
-  const avatarBg = isReal ? 'bg-dash-primary' : 'bg-dash-text-secondary'
+  const cardTone = selected
+    ? 'border-emphasis border-dash-primary bg-dash-select'
+    : status === 'stuck'
+      ? 'border-emphasis border-dash-status-stuck bg-dash-surface'
+      : 'border border-dash-border bg-dash-surface hover:bg-dash-bg'
+  const avatarTone = isReal
+    ? 'bg-dash-primary text-dash-surface'
+    : 'bg-dash-avatar-bg text-dash-text-strong'
   const elapsedColor = elapsedRed ? 'text-dash-status-stuck' : 'text-dash-text-primary'
 
   return (
     <button
       type="button"
       onClick={() => onSelect(event.id)}
-      className={`flex w-full items-center gap-4 rounded-dash-card border p-4 text-left transition-colors duration-200 ${cardTone} ${selectedTone} ${shake ? 'card-shake' : ''}`}
+      className={`relative flex w-full items-center gap-4 rounded-dash-row px-4 py-3.5 text-left transition-colors duration-200 ${cardTone} ${shake ? 'card-shake' : ''}`}
     >
-      {/* 1열: 문자 아바타 */}
-      <div className="flex w-10 shrink-0 flex-col items-center gap-0.5">
+      {/* 막힘 카드 좌측 안쪽 세로 액센트 (radius 따라 붙게) */}
+      {status === 'stuck' && !selected && (
         <span
-          className={`flex h-10 w-10 items-center justify-center rounded-full text-dash-item-title text-dash-surface ${avatarBg}`}
-        >
-          {event.avatar}
-        </span>
-        {isReal && <span className="text-dash-small text-dash-primary">실습</span>}
-      </div>
+          className="pointer-events-none absolute inset-y-0 left-0 rounded-l-dash-row bg-dash-status-stuck"
+          style={{ width: borderWidth.accent }}
+        />
+      )}
 
-      {/* 2열: 서비스명 + 현재 단계 + 진입 */}
+      {/* 1열: 라운드 사각 아바타 */}
+      <span
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-dash-row text-dash-item-title ${avatarTone}`}
+      >
+        {event.avatar}
+      </span>
+
+      {/* 2열: 서비스명(+실습/완료) / 현재 단계·진입 */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-dash-item-title text-dash-text-primary">
             {event.service}
           </span>
+          {isReal && <span className="shrink-0 text-dash-meta text-dash-primary">실습</span>}
           {status === 'done' && (
             <CircleCheck size={iconSize.sm} className="shrink-0 text-dash-status-done" />
           )}
         </div>
-        <div className="truncate text-dash-small text-dash-text-secondary">
-          현재 단계: {event.screenLabel} · 진입 {formatClock(event.enteredAt)}
+        <div className="mt-0.5 flex items-baseline justify-between gap-2">
+          <span className="min-w-0 truncate text-dash-text-strong">
+            <span className="text-dash-step">현재 단계: </span>
+            <span className="text-dash-step-strong">{event.screenLabel}</span>
+          </span>
+          <span className="shrink-0 text-dash-meta text-dash-text-secondary">
+            진입 {formatClock(event.enteredAt)}
+          </span>
         </div>
       </div>
 
-      {/* 3열: 상태 뱃지 */}
+      {/* 3열: 상태 dot + 텍스트 */}
       <div className="shrink-0">
         <StatusBadge status={status} />
       </div>

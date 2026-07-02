@@ -8,19 +8,19 @@ function AIPrescriptionCard({ analysis, elapsedMs }) {
     <div className="rounded-dash-card border border-dash-border bg-dash-surface p-4">
       <div className="mb-4 flex items-baseline justify-between gap-2">
         <span className="text-dash-heading text-dash-text-primary">{analysis.screenLabel}</span>
-        <span className="text-dash-small text-dash-text-secondary">
+        <span className="text-dash-meta text-dash-text-secondary">
           경과 {formatElapsed(elapsedMs)}
         </span>
       </div>
 
       <div className="mb-4">
-        <p className="mb-1 text-dash-small text-dash-text-secondary">추정 원인</p>
-        <p className="text-dash-ai-body font-bold text-dash-primary">{analysis.cause}</p>
+        <p className="mb-1 text-dash-label text-dash-text-secondary">추정 원인</p>
+        <p className="text-dash-ai-body text-dash-primary">{analysis.cause}</p>
       </div>
 
       <div>
-        <p className="mb-1 text-dash-small text-dash-text-secondary">강사 제안</p>
-        <p className="text-dash-ai-body font-bold text-dash-primary">{analysis.suggestion}</p>
+        <p className="mb-1 text-dash-label text-dash-text-secondary">강사 제안</p>
+        <p className="text-dash-ai-body text-dash-primary">{analysis.suggestion}</p>
       </div>
     </div>
   )

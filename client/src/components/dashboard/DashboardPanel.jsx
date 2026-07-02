@@ -8,8 +8,8 @@ function DashboardPanel({ events, selectedId, onSelect }) {
       <h2 className="mb-4 text-dash-panel-title text-dash-text-primary">
         시니어 교육 강사용 대시보드
       </h2>
-      {/* px-1: 카드 4변 테두리(특히 좌변)가 스크롤 컨테이너에 잘리지 않게 여백 확보 (FIX-C 7) */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-1">
+      {/* 최대 6행 고정이라 스크롤 없음(overflow-hidden). px-1.5: 카드 좌측 테두리·shake(±4px)가 잘리지 않게 여백 (FIX-D) */}
+      <div className="min-h-0 flex-1 overflow-hidden px-1.5">
         <EventList events={events} selectedId={selectedId} onSelect={onSelect} />
       </div>
     </div>

@@ -6,6 +6,7 @@ import { layout, timing } from './tokens.js'
 import { helpHints } from './data/helpHints.js'
 import KioskDevice from './components/kiosk/chassis/KioskDevice.jsx'
 import KioskCamera from './components/kiosk/chassis/KioskCamera.jsx'
+import PaperReceiveOverlay from './components/kiosk/chassis/PaperReceiveOverlay.jsx'
 import ModeControlBar from './components/controls/ModeControlBar.jsx'
 import HelpOverlay from './components/controls/HelpOverlay.jsx'
 import TimeoutWarning from './components/controls/TimeoutWarning.jsx'
@@ -175,7 +176,10 @@ function App() {
   // M13(인쇄중) 타이머 종료 → 모달 닫고 종이 출력 시작(paperReady). 아직 완료 처리 안 함.
   const handlePrintingDone = useCallback(() => dispatch({ type: 'PRINTING_DONE' }), [])
 
-  // 종이 수령(진짜 완료) → 이벤트 완료 처리 + 세션 초기화(줌인 복귀)
+  // 종이 클릭 → 수령 연출 시작(중앙 이동+확대). 완료 처리는 연출 종료 후.
+  const handlePaperClick = useCallback(() => dispatch({ type: 'RECEIVE_START' }), [])
+
+  // 수령 연출 종료(오버레이 onDone) → 이벤트 완료 처리 + 세션 초기화(줌인 복귀)
   const handlePaperReceive = useCallback(() => {
     if (activeEventIdRef.current != null) {
       eventsDispatch({ type: 'SET_STATUS', id: activeEventIdRef.current, status: 'done' })
@@ -183,9 +187,14 @@ function App() {
     dispatch({ type: 'RECEIVE_PAPER' })
   }, [])
 
-  // 컨트롤 바 "시뮬레이터" = 전체 초기화. 세션/발급연출/줌만 초기화하고,
-  // 진행 중이던 실제 이벤트는 대시보드에 상태 그대로 보존(sync effect가 CLEAR_ACTIVE로 경과 고정). 모드 토글은 유지.
-  const handleSimulatorReset = useCallback(() => dispatch({ type: 'RESET' }), [])
+  // 컨트롤 바 "시뮬레이터"(홈) = 전체 초기화: A 행 제거 + B~F 시뮬레이션도 startDelay부터 재시작.
+  // 세션/발급연출/줌도 초기화. 모드 토글은 유지. (FIX-D: 대시보드는 항상 최대 6행)
+  const handleSimulatorReset = useCallback(() => {
+    dispatch({ type: 'RESET' })
+    eventsDispatch({ type: 'RESET_ALL' })
+    activeEventIdRef.current = null
+    prevStepRef.current = 'S1'
+  }, [])
 
   const goNext = () => dispatch({ type: 'GO_NEXT' })
   const goBack = () => dispatch({ type: 'GO_BACK' })
@@ -328,12 +337,18 @@ function App() {
                 onFingerprint={() => dispatch({ type: 'SHOW_MODAL', modal: 'M6' })}
                 fingerprintHighlight={mode.helpOn && session.step === 'S5'}
                 issuePhase={session.issuePhase}
-                onPaperReceive={handlePaperReceive}
+                onPaperClick={handlePaperClick}
+                mainScreen={session.step === 'S1'}
               >
                 {renderScreen()}
                 {renderModal()}
               </KioskDevice>
             </KioskCamera>
+
+            {/* 종이 수령 연출 (좌측 영역 중앙, 카메라 위) */}
+            {session.issuePhase === 'receiving' && (
+              <PaperReceiveOverlay onDone={handlePaperReceive} />
+            )}
 
             {/* 도움말 말풍선 (기기 밖 오버레이, 발급 연출 중엔 숨김) */}
             {mode.helpOn && session.issuePhase === 'idle' && helpHints[session.step] && (

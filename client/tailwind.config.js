@@ -1,4 +1,4 @@
-import { colors, fontFamily, fontSize, spacing, radius, layout } from './src/tokens.js'
+import { colors, fontFamily, fontSize, spacing, radius, borderWidth, layout } from './src/tokens.js'
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -10,6 +10,7 @@ export default {
       fontSize,
       spacing,
       borderRadius: radius,
+      borderWidth,
       width: {
         'device-frame': `${layout.deviceFrameWidth}px`,
       },
