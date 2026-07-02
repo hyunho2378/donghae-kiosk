@@ -9,8 +9,8 @@ function CashInput() {
   return (
     <div className="flex w-full flex-col items-center gap-3">
       <HardwareLabel large>현금 넣는 곳</HardwareLabel>
-      <div className="flex w-full items-end justify-center gap-5">
-        {/* 좌: 1000원 지폐 가로 투입구 */}
+      <div className="flex w-full items-start justify-center gap-5">
+        {/* 좌: 1000원 지폐 가로 투입구 (실물에 맞으므로 유지) */}
         <div className="flex flex-1 flex-col items-center gap-1.5">
           <span className="text-center text-[13px] leading-tight" style={microText}>
             1000원 지폐 넣는 곳
@@ -21,23 +21,23 @@ function CashInput() {
           />
         </div>
 
-        {/* 우: 동전 세로 레버 + 손잡이 */}
+        {/* 우: 동전 세로 슬림 레버 (FIX-K: 폭 좁고 세로로 긴 막대, ≈1:4) */}
         <div className="flex flex-col items-center gap-1.5">
           <span className="w-24 text-center text-[13px] leading-tight" style={microText}>
             50원 100원 500원 동전 넣는 곳
           </span>
           <div
-            className="relative h-[68px] w-10 rounded-md"
+            className="relative h-[100px] w-6 rounded-full"
             style={{ background: `linear-gradient(90deg, ${baseSilverDark}, ${metalSilver}, ${baseSilverDark})` }}
           >
-            {/* 세로 홈 */}
+            {/* 세로 홈(길게) */}
             <div
-              className="absolute inset-x-2.5 top-2 bottom-6 rounded-full"
+              className="absolute inset-x-1.5 top-2 bottom-9 rounded-full"
               style={{ backgroundColor: glossBlack }}
             />
-            {/* 손잡이 */}
+            {/* 손잡이(하단) */}
             <div
-              className="absolute bottom-1.5 left-1/2 h-4 w-7 -translate-x-1/2 rounded-sm"
+              className="absolute bottom-1.5 left-1/2 h-4 w-5 -translate-x-1/2 rounded-sm"
               style={{ backgroundColor: metalSilver, border: '1px solid rgba(0,0,0,0.4)' }}
             />
           </div>

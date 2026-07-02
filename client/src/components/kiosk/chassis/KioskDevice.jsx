@@ -62,23 +62,28 @@ function KioskDevice({
         </div>
       </div>
 
-      {/* ── 증명서 출구(좌) + 지문확인(중앙) 띠 ── */}
+      {/* ── 증명서 출구 + 지문확인 띠 (FIX-K: 본체와 같은 컬럼 정렬 — 스크린 폭 안에 나란히) ── */}
       <div
-        className="relative z-20 flex items-start justify-center gap-12 px-10 pt-3"
+        className="relative z-20 flex gap-4 px-4 pt-3"
         style={{
           height: layout.bandHeight,
           backgroundColor: bodyMain,
           borderTop: '1px solid rgba(255,255,255,0.06)',
         }}
       >
-        <div className="w-[540px]">
-          <CertificateOutlet issuePhase={issuePhase} onPaperClick={onPaperClick} />
+        {/* 스크린 폭(700) 아래: 증명서(좌) + 지문확인(우) — 하단 스크린 확장부처럼 붙여서 */}
+        <div className="flex w-[700px] shrink-0 items-start gap-6">
+          <div className="flex-1">
+            <CertificateOutlet issuePhase={issuePhase} onPaperClick={onPaperClick} />
+          </div>
+          <FingerprintScanner
+            active={fingerprintActive}
+            onScanComplete={onFingerprint}
+            highlight={fingerprintHighlight}
+          />
         </div>
-        <FingerprintScanner
-          active={fingerprintActive}
-          onScanComplete={onFingerprint}
-          highlight={fingerprintHighlight}
-        />
+        {/* 우측 하드웨어 컬럼 아래는 비움(증명서/지문이 그쪽을 침범하지 않게) */}
+        <div className="flex-1" />
       </div>
 
       {/* ── 최하단 은색 받침대 ── */}
