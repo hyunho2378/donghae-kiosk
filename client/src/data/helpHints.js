@@ -5,7 +5,8 @@ export const helpHints = {
   S1: { text: '발급받을 증명서 종류를 눌러 주세요. 이번 연습은 졸업증명서입니다.', anchor: 'graduation-button' },
   S3: { text: '주민등록번호 13자리를 누른 뒤, 왼쪽 위 다음 버튼을 눌러 주세요.', anchor: 'next-button' },
   S4: { text: '지문 카드를 눌러 주세요.', anchor: 'fingerprint-card' },
-  S5: { text: '화면 옆 기기의 지문인식기에 엄지를 대듯 눌러 주세요.', anchor: 'hardware-fingerprint' },
+  // position 'top': 강조 대상(지문확인)이 하단에 있어 말풍선을 상단으로 올려 가리지 않게 (FIX-J). 나머지 화면은 기본 'bottom'.
+  S5: { text: '아래 지문확인 장치에 엄지를 대듯 눌러 주세요.', anchor: 'hardware-fingerprint', position: 'top' },
   S7: { text: '졸업한 학교가 있는 지역의 교육청을 눌러 주세요.', anchor: 'region-grid' },
   S8: { text: '학교 이름을 두 글자 이상 입력하고 다음을 눌러 주세요.', anchor: 'next-button' },
   S9: { text: '목록에서 학교 이름을 눌러 주세요.', anchor: 'school-item' },

@@ -16,6 +16,25 @@
 
 - [ ] (다음 세션에서 PROMPT 08 시작 — 2회차 재방문 시뮬레이션: 이전 막힘 지점 기억)
 
+## 완료 (FIX-J: 도움말 말풍선이 지문확인 가리는 문제 + S5 지문 프레이밍)
+
+### FIX1 말풍선 화면별 위치 회피
+- [x] HelpOverlay에 position prop('bottom' 기본 | 'top') 추가 → top이면 bottom-6 대신 top-6
+- [x] helpHints S5에 position:'top' 지정(나머지는 필드 없음 → 기본 bottom). App이 helpHints[step].position 전달
+- [x] S5 말풍선 상단 배치(top-6, y~24) vs 지문 띠(뷰포트 766~880) → 겹침 없음. 다른 화면은 하단 그대로
+- [x] (부수) S5 힌트 텍스트를 "화면 옆 기기의 지문인식기…"→"아래 지문확인 장치에 엄지를 대듯…"으로 정정(FIX-H에서 우측→하단중앙 이동 반영, 라벨 '지문확인'과 일치)
+
+### FIX2 S5 전용 중간 줌 프레이밍
+- [x] KioskCamera에 'fingerprint' view 추가: FINGERPRINT_HEIGHT=ZOOMIN_HEIGHT+100 → scale 0.760(screen 0.826보다 살짝 줌아웃). node 검증: 지문 띠 뷰포트-y 766~880, 띠 아래 여백 76px(screen뷰는 0px라 끝에 붙음) → 지문확인 안 잘리고 넉넉히 보임
+- [x] App cameraView: issuePhase!==idle→full / step===S5→fingerprint / else screen. S5 이탈(S7 등)→screen 복귀. 도움말 OFF여도 S5 프레이밍 적용
+- [x] 카메라 로직 형태 유지(스케일 상수 1개 추가 + view 매핑), origin top-center 그대로. 지문 클릭→스캔→M6 로직 불변
+
+### FIX3
+- [x] 도움말 OFF 시 S5 별도 강조 없음(프레이밍만으로 인지) — 기본값 채택. 도움말 ON 시 노란 실선 점멸 링은 기존 그대로
+
+### 검증
+- [x] npm run build 통과, dev 200, 콘솔 에러 없음. 스크린 화면/대시보드/AI/지문 위치·클릭 로직 불변
+
 ## 완료 (FIX-I: 배경 밝기로 기기 구분 + 주요 하드웨어 확대)
 
 ### FIX1 기기 바깥 배경 밝게(실루엣 대비)

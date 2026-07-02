@@ -331,7 +331,15 @@ function App() {
         >
           <ModeControlBar mode={mode} dispatch={modeDispatch} onReset={handleSimulatorReset} />
           <div className="relative min-h-0 flex-1">
-            <KioskCamera view={session.issuePhase === 'idle' ? 'screen' : 'full'}>
+            <KioskCamera
+              view={
+                session.issuePhase !== 'idle'
+                  ? 'full'
+                  : session.step === 'S5'
+                    ? 'fingerprint'
+                    : 'screen'
+              }
+            >
               <KioskDevice
                 fingerprintActive={session.step === 'S5'}
                 onFingerprint={() => dispatch({ type: 'SHOW_MODAL', modal: 'M6' })}
@@ -351,8 +359,12 @@ function App() {
             )}
 
             {/* 도움말 말풍선 (기기 밖 오버레이, 발급 연출 중엔 숨김) */}
+            {/* position: 강조 대상이 하단(S5 지문확인)인 화면은 'top'으로 올려 목표물을 가리지 않게 (FIX-J) */}
             {mode.helpOn && session.issuePhase === 'idle' && helpHints[session.step] && (
-              <HelpOverlay text={helpHints[session.step].text} />
+              <HelpOverlay
+                text={helpHints[session.step].text}
+                position={helpHints[session.step].position}
+              />
             )}
 
             {/* 시간제한 경고 (마지막 10초) */}
