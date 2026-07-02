@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', sans-serif;
+}
+
+/* 지문인식기 스캔 라인 (0.8초, S5 클릭 시) */
+@keyframes fp-scan {
+  0% {
+    top: 0%;
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0.2;
+  }
+}
+
+.fp-scan-line {
+  animation: fp-scan 0.8s linear;
+}
+
+/* 증명서 종이 출력: 슬롯 안(완전히 숨김)에서 시작해 2초간 내려오며 드러나고, 위쪽 끝은 슬롯에 물린 채 정지.
+   부모 클립 영역(overflow-hidden)이 슬롯 위쪽을 가린다. */
+@keyframes paper-out {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(-12%);
+  }
+}
+
+.paper-entering {
+  animation: paper-out 2s ease-out forwards;
+}
+
+/* 종이 수령(살짝 아래 + 페이드, 0.4초) — 정지 위치(-12%)에서 시작 */
+@keyframes paper-leave {
+  0% {
+    opacity: 1;
+    transform: translateY(-12%);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20%);
+  }
+}
+
+.paper-leaving {
+  animation: paper-leave 0.4s ease-in forwards;
+}
