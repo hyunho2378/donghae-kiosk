@@ -14,7 +14,98 @@
 
 ## 진행중
 
-- [ ] (다음 세션에서 PROMPT 08 시작 — 2회차 재방문 시뮬레이션: 이전 막힘 지점 기억)
+- [ ] (다음 세션 대기 — 2회차 재방문 시뮬레이션(이전 막힘 지점 기억), PROMPT 09 선택 항목이던 "A 세션 실시간 DB 저장"은 시간 관계상 스킵. 둘 다 미착수)
+
+## 완료 (FIX-L: 개인별 기록 더미데이터 10명으로 다양화)
+
+### 1~2 서비스 다양화 + 10명 구성
+- [x] dummyRecords.js 전면 재작성: FIX-C GENERIC_STEPS(simulatedSeniors.js와 동일 key/label: GEN_MENU/ID/FINGERPRINT/OPTION/FEE/DONE) 재사용 + 졸업증명서는 기존 S3~S12 유지. 인물마다 `service` 필드 추가(person 단위 고정, makePerson(identifier, service, visits))
+- [x] 표 그대로 10명 구현(재배열 없음): 졸업증명서×2, 가족관계증명서×2, 주민등록등본×2, 지방세 납세증명×2, 건축물대장×1, 토지대장×1 — 6종 골고루
+- [x] 방문 날짜: 식별자 앞 6자리(최초 방문일)부터 5~14일 간격으로 순차 생성(node로 전원 검증)
+- [x] 막힘 시간: 8~90초 범위에서 코프라임 스트라이드(37/83)로 52개 전부 고유값 생성 후 배정 — 전체 데이터셋 어디에도 중복 없음(node 검증)
+- [x] 표에 지정한 "주로 막히는 단계"·추이 패턴(4→2→1, 3→1, 2→2→3, 5→3→2→0, 2→2, 1회, 3→1→0, 1→3, 4→2→1, 2→2)을 정확히 재현하도록 단계별 stuck 배정 설계 → node로 10명 전원 dominant step·counts 시퀀스·service 일치 검증(69/69 pass)
+
+### 3 서비스명 노출
+- [x] RecordCard.jsx: `{identifier} · {service}` 형태로 목록에 서비스명 추가
+- [x] RecordDetail.jsx: 상세 헤더에 서비스명 한 줄 추가(식별자/방문뱃지 아래, 최초·최근 방문일 위)
+- [x] 도넛 범례는 별도 수정 없이 데이터 변경만으로 각 인물의 실제 서비스 단계명이 자동 반영됨(StuckRatioDonut은 stepLogs를 그대로 집계하므로 컴포넌트 코드 변경 불필요)
+
+### 4 DB 반영(PROMPT 09 적용 상태 — 재시드 완료)
+- [x] server/schema.sql, server/migrate.js: seniors 테이블에 `service TEXT NOT NULL` 추가. 이미 생성돼 있던 테이블이라 `CREATE TABLE IF NOT EXISTS`가 컬럼을 소급 추가 못 하는 문제를 `ALTER TABLE seniors ADD COLUMN IF NOT EXISTS service ... DEFAULT ''`로 별도 보강(반복 실행 안전)
+- [x] server/seed.js: INSERT INTO seniors에 service 컬럼 추가(person.service 그대로 삽입)
+- [x] server/routes/records.js: GET /api/records, GET /api/records/:identifier 응답에 service 필드 추가
+- [x] **실행 완료**: `node server/migrate.js`(컬럼 추가 확인) → `node server/seed.js`(10명 재시드, TRUNCATE 후 재삽입) → curl로 실제 API 응답 검증(10명·6서비스·정확한 stuck 카운트 시퀀스 전부 일치)
+
+### 검증
+- [x] npm run build 통과(1845 modules). node 스크립트로 데이터 정합성 69개 항목 전수 검증. 서버(3001)+클라이언트(5173, 프록시) 동시 기동 후 curl로 실제 브라우저 경로와 동일하게 목록/상세 재확인
+- [x] 목록/상세 레이아웃, 도넛/라인 차트 컴포넌트 구조 미변경(서비스명 텍스트 한 줄 추가만). 색상 체계(dashColors 매핑) 미변경
+
+### 0 확인 + 패키지
+- [x] server/.env에 DATABASE_URL 존재 확인(값은 로그에 노출하지 않고 길이만 확인). server/에 `@neondatabase/serverless` 설치
+
+### 1 DB 연결 모듈
+- [x] server/db.js: DATABASE_URL로 `neon()` sql 클라이언트 생성·export. dotenv config를 이 파일 기준 절대경로(`server/.env`)로 로드 — cwd가 server/든 repo 루트든(`node server/migrate.js` vs `node index.js`) 동일하게 동작. DATABASE_URL 비어있으면 어떤 경로를 봤는지 로그 남기고 throw
+
+### 2 스키마 실행
+- [x] schema.sql 4개 테이블에 `IF NOT EXISTS` 추가(PROMPT 08 문서를 참조용으로 유지, 실제 적용은 migrate.js 담당)
+- [x] server/migrate.js 신설, `node server/migrate.js`로 seniors/visits(FK senior_id)/step_logs(FK visit_id)/ai_weakness_summaries(FK senior_id) 실제 생성. **실행 확인**: 4개 테이블 생성 완료 로그
+- [x] server/package.json에 `migrate`/`seed` 스크립트 추가
+
+### 3 시드
+- [x] client/src/lib/weaknessSummary.js 신설 — PROMPT 08의 AIWeaknessSummary.jsx 내부 로직(aggregateStuckSteps/buildSummaryText)을 순수 함수로 추출해 클라이언트·서버가 공유(문구 재창작 방지). AIWeaknessSummary.jsx/RecordDetail.jsx는 이 공유 함수를 import하도록 교체(렌더 결과 100% 동일, 구조·스타일 변경 없음)
+- [x] server/seed.js: `dummyRecords.js`(client/src/data/) 그대로 seniors/visits/step_logs에 삽입 + weaknessSummary.js로 생성한 문구를 ai_weakness_summaries에 삽입. TRUNCATE ... RESTART IDENTITY CASCADE 후 재삽입(반복 실행 안전)
+- [x] **버그 발견·수정**: Neon 드라이버가 DATE 컬럼을 로컬 자정 기준 JS Date로 반환하는데, 응답 포맷터가 `toISOString()`(UTC 변환)을 써서 KST(UTC+9)에서 하루가 밀림(6/1→5/31 등). `records.js`의 `toDateStr`을 로컬 getter(`getFullYear/getMonth/getDate`) 기반으로 수정해 해결. node로 재검증: 전원 PROMPT 08 원본 날짜와 정확히 일치
+- [x] **실행 확인**: `node server/seed.js` → 6명 삽입 성공. DB 직접 조회로 식별자별 stuckCounts가 dummyRecords.js와 완전히 동일함을 검증(3,1,0 / 4,2,0 / 3,1 / 2,3,2 / 0,2 / 5,3,1,0)
+
+### 4 API 라우트
+- [x] server/routes/records.js: `GET /api/records`(목록 요약, JOIN 없이 senior→visits→마지막 방문의 stuck step_logs 순차 조회), `GET /api/records/:identifier`(방문+단계로그 전체, 404 처리). server/index.js에 `/api/records`로 등록
+- [x] **실행 확인**: curl로 두 엔드포인트 응답 형태·날짜 검증, 존재하지 않는 식별자 404 확인
+
+### 5 클라이언트 전환
+- [x] mockRecordsClient.js: 파일명·함수 시그니처(getRecordsList/getRecordDetail) 유지, 내부를 `fetch('/api/records'[, '/:identifier'])`로 교체. 실패 시 에러 메시지 throw(RecordsList/RecordDetail이 catch)
+- [x] vite.config.js에 `/api → http://localhost:3001` 프록시 추가. curl로 `localhost:5173/api/records` 정상 응답 확인(프록시 동작 검증)
+
+### 6 로딩/에러 상태
+- [x] RecordsList.jsx, RecordDetail.jsx에 AIPanel과 동일한 톤(Loader2 spin + `AI 분석 중...` 대신 `불러오는 중...`, dash-note 텍스트) 로딩 상태 추가. 실패 시 "기록을 불러오지 못했습니다" + 다시 시도 버튼(재요청). RecordDetail은 뒤로가기 버튼을 로딩/에러 중에도 항상 노출해 화면이 막히지 않게 함
+- [x] node로 빈 DB 시나리오 검증: TRUNCATE 후 `GET /api/records` → `[]`(에러 아님, 프론트는 빈 목록으로 정상 렌더) 확인 후 재시드로 복구
+
+### 7 선택 항목
+- [ ] A(실습) 세션 실시간 DB 저장 — 스킵(시간 관계상, 프롬프트에서 선택사항으로 명시). 데모는 시드 데이터로 진행
+
+### 하지 않은 것 확인
+- [x] B~F 시뮬레이션(실시간 대시보드) 미변경, RecordsList/RecordDetail/도넛/라인 렌더 구조·클래스명 불변(로딩/에러 분기만 추가), 새 ORM 도입 없음(순수 SQL 태그 템플릿), 시드 데이터 내용 재창작 없음(공유 함수로 원본 재사용 보장)
+
+### 검증
+- [x] npm run build 통과(1845 modules). 서버 dev(3001) + 클라이언트 dev(5173, 프록시) 동시 기동 후 브라우저 경로와 동일한 curl 시나리오로 목록/상세/404/빈DB 전부 확인
+
+### 탭 + 목록/상세 내비게이션
+- [x] DashboardPanel에 탭 상태(useState) 추가: 실시간 현황(기존 EventList, 로직·6행 고정 규칙 불변) / 개인별 기록. 탭 전환 시 상세 선택 초기화
+- [x] RecordsTabToggle(controlled active/onChange), RecordsList↔RecordDetail은 DashboardPanel의 selectedIdentifier로 전환(목록 클릭→상세, 상세 뒤로가기→목록)
+- [x] 개인별 기록 탭은 실시간 현황과 달리 overflow-y-auto(6행 no-scroll 규칙은 실시간 탭 전용이라 무관)
+- [x] 우측 하단 AI 패널 미변경 — selectedEvent(실시간 이벤트 선택) 로직 그대로, 개인별 기록의 selectedIdentifier와 별개 상태
+
+### 식별자 + 더미 데이터
+- [x] src/lib/identifier.js: issueIdentifier(date, sameDayCount) → YYMMDD-A. 더미 생성용 함수 형태만
+- [x] src/data/dummyRecords.js: 6명, 각 방문 stepLogs(S3/S4/S5/S7/S8/S9/S10/S11/S12 — App.jsx SCREEN_LABELS와 동일 라벨). node 검증: 4명 뚜렷한 개선(예 5→3→1→0), **2명은 개선 불명확**(260608-A 2→3→2 유지, 260610-A 0→2 신규 막힘) — "1~2명" 요구 충족. 실명 등 개인정보 없음
+
+### 데이터 접근 + 상세 화면
+- [x] src/lib/mockRecordsClient.js: getRecordsList()/getRecordDetail(identifier), mockAiClient 패턴이나 로컬 조회라 딜레이 없음
+- [x] RecordDetail: 헤더(식별자+방문횟수뱃지+최초/최근 방문일) → 2분할(StuckRatioDonut/VisitTrendLine) → VisitTimeline → AIWeaknessSummary
+- [x] StuckRatioDonut: 순수 SVG(stroke-dasharray), 중앙 총 막힘 횟수. 막힘 0건 시 빈 도넛+안내문 분기
+- [x] VisitTrendLine: 순수 SVG 라인+점(막대 없음), 축 라벨 폰트크기도 tokens.fontSize['dash-meta']에서 파생(하드코딩 없음)
+
+### 색상 재사용(신규 팔레트 없음)
+- [x] 도넛 1순위=dash-status-stuck(빨강)/2순위=dash-primary(파랑)/3순위+=dash-text-secondary(회색). 추이 점 첫방문=stuck/중간=primary/최근=status-done(초록). AI 요약 카드=dash-select 배경+dash-ai-body(dash-primary, 700 볼드 내장, FIX-D 토큰) — tokens.js 색상 키 추가 없이 전부 기존 dash 팔레트 재사용
+- [x] AI 요약 문구: 규칙 기반(추정됩니다/보입니다 어미), node로 6명 전원 텍스트에 *, :, 작은따옴표, ㅡ 미포함 확인(추정형 유지·단정형 없음)
+
+### 스키마 설계(연결 없음)
+- [x] server/schema.sql 신설: seniors/visits/step_logs/ai_weakness_summaries 4개 CREATE TABLE. 실행/연결 안 함. mockRecordsClient.js 상단 주석에 교체 예정 명시
+
+### 문서
+- [x] COMPONENTS.md에 "우측 상단: 개인별 기록 영역" 섹션 + 데이터 접근 섹션 추가(신규 컴포넌트 8개 문서화)
+
+### 검증
+- [x] npm run build 통과(1845 modules). node로 식별자 포맷/집계/개선-불명확 케이스/AI 문구 금지문자 검증. dev 200, 콘솔 에러 없음. 좌측 키오스크·실시간 대시보드·AI 패널 기존 로직 미변경(파일 diff 없음)
 
 ## 완료 (FIX-K: 증명서·지문확인 스크린 폭 안으로 + 동전 슬롯 세로 슬림)
 
