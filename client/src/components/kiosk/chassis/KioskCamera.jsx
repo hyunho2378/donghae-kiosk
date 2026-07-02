@@ -20,7 +20,32 @@ const FULL_SCALE = (CAMERA_HEIGHT * 0.98) / DEVICE_FULL_HEIGHT
 
 const SCALE_BY_VIEW = { full: FULL_SCALE, fingerprint: FINGERPRINT_SCALE, screen: SCREEN_SCALE }
 
-function KioskCamera({ view, children }) {
+// 모바일(PROMPT 10): 스케일은 폭 기준 고정(기기가 화면 폭을 꽉 채움). view는 스케일이 아니라 크롭 높이만 바꿔
+// 줌인(스크린+하드웨어+띠)→줌아웃(하단 받침대까지 세로로 반개)을 연출한다. 데스크톱 경로는 그대로.
+const DEVICE_WIDTH = layout.leftPanelWidth
+const CROP_BY_VIEW = { full: DEVICE_FULL_HEIGHT, fingerprint: FINGERPRINT_HEIGHT, screen: ZOOMIN_HEIGHT }
+
+function KioskCamera({ view, children, mobile = false, availWidth = 0 }) {
+  if (mobile) {
+    const scale = availWidth / DEVICE_WIDTH
+    const cropHeight = (CROP_BY_VIEW[view] ?? ZOOMIN_HEIGHT) * scale
+    return (
+      <div
+        className="relative shrink-0 overflow-hidden"
+        style={{
+          width: availWidth,
+          height: cropHeight,
+          backgroundColor: colors.kiosk['stage-bg'],
+          transition: `height ${timing.cameraMs}ms ease-in-out`,
+        }}
+      >
+        <div style={{ width: DEVICE_WIDTH, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+          {children}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className="relative h-full w-full overflow-hidden"

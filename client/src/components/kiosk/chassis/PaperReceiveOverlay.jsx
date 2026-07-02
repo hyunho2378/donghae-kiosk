@@ -7,7 +7,8 @@ import { useEffect, useRef, useState } from 'react'
 import { timing } from '../../../tokens.js'
 import CertificateCard from './CertificateCard.jsx'
 
-function PaperReceiveOverlay({ onDone }) {
+// targetScale: 중앙 확대 배율. 데스크톱 1.8, 모바일은 화면 폭에 맞춰 축소된 값을 받는다(PROMPT 10).
+function PaperReceiveOverlay({ onDone, targetScale = 1.8 }) {
   const [grown, setGrown] = useState(false) // 중앙 이동+확대 트리거
   const [fading, setFading] = useState(false) // 소멸 트리거
   const onDoneRef = useRef(onDone)
@@ -32,7 +33,7 @@ function PaperReceiveOverlay({ onDone }) {
     <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center">
       <div
         style={{
-          transform: grown ? 'translateY(0) scale(1.8)' : 'translateY(90px) scale(0.85)',
+          transform: grown ? `translateY(0) scale(${targetScale})` : 'translateY(90px) scale(0.85)',
           opacity: fading ? 0 : 1,
           boxShadow: grown ? '0 30px 70px rgba(0,0,0,0.5)' : '0 10px 24px rgba(0,0,0,0.3)',
           transition: `transform ${timing.paperReceiveMoveMs}ms ease-out, box-shadow ${timing.paperReceiveMoveMs}ms ease-out, opacity ${timing.paperReceiveFadeMs}ms ease-in`,

@@ -16,6 +16,30 @@
 
 - [ ] (다음 세션 대기 — 2회차 재방문 시뮬레이션(이전 막힘 지점 기억), PROMPT 09 선택 항목이던 "A 세션 실시간 DB 저장"은 시간 관계상 스킵. 둘 다 미착수. NeonDB 실연결은 FIX-M에서 다시 프론트 고정으로 되돌림 — server/ 파일은 보존되어 있어 나중에 재개 가능)
 
+## 완료 (PROMPT 10: 모바일 키오스크 전용 체험 모드 — 폭<768 분기, 데스크톱 불변)
+
+### 분기/렌더 범위
+- [x] App.jsx: viewportWidth 추적(resize) → `isMobile = viewportWidth < 768`. 데스크톱 return은 그대로 두고, 그 앞에 `if (isMobile)` 별도 모바일 트리만 추가(데스크톱 JSX 1글자도 안 건드림). ModeControlBar/KioskCamera/PaperReceiveOverlay는 기본값=데스크톱인 추가 prop만 받음
+- [x] 모바일 렌더: 컴팩트 컨트롤바 + 기기(스크린+우측 하드웨어 컬럼 전체+하단 지문/증명서 띠). 대시보드/AI/개인별 기록 전부 미렌더
+- [x] B~F 시뮬레이션 TICK: 모바일에서 dispatch 자체 skip(`if (isMobile) return`, deps [isMobile]). A 세션 sync 로직은 무해하므로 유지(화면엔 안 보임)
+
+### 레이아웃/스케일
+- [x] KioskCamera에 `mobile`/`availWidth` 분기 추가: 스케일=availWidth/1040(폭 기준 고정), view는 스케일이 아니라 크롭 높이(screen=ZOOMIN / fingerprint=+100 / full=전체)만 바꿔 줌인→줌아웃(하단 반개) 연출. transform-origin top-left. 데스크톱 경로(top-center, view별 스케일) 완전 불변
+- [x] 모바일 셸: 컨트롤바(compact) + `relative flex-1`(오버레이 기준) 안에 `overflow-y-auto` 스크롤 + `min-h-full items-center justify-center`(맞으면 중앙, 넘치면 스크롤·상단 안 잘림). 배경 stage-bg. availWidth=viewportWidth-20(좌우 여백 20px)
+- [x] ModeControlBar `compact` prop: gap/padding 축소 + flex-wrap 줄바꿈 허용 + 상태 라벨 생략(높이 ~40px). 데스크톱은 기존 44px 고정 그대로
+- [x] 하드웨어 라벨은 기기 통째 scale이라(리플로우 아님) 뭉개짐/겹침 없음 — 데스크톱과 동일 비율
+
+### 발급/지문/도움말 연출
+- [x] 발급: S12→full view(크롭 높이 증가로 하단 받침대 반개=줌아웃 연출)→M13→종이 슬라이드→종이 터치→중앙 확대→소멸→줌인 복귀. 동일 시퀀스·tokens.timing 재사용
+- [x] PaperReceiveOverlay `targetScale` prop: 데스크톱 1.8, 모바일은 min(1.8,(vw-44)/300)로 폭 맞춤(390폰 기준 1.15, 카드 346px). 시작 0.85/애니메이션 동일
+- [x] 지문확인: S5 fingerprint view(크롭 +100)로 하단 지문 장치 노출, 터치→스캔→M6 로직 불변
+- [x] 도움말 말풍선: HelpOverlay 변경 없이 재사용 — px-6+max-w-680이 폰에서 자연히 ~88%(≈90%)로 축소, 22px 유지(가독), S5는 position top으로 지문 안 가림. 시간제한 20초+경고 오버레이 그대로 동작
+
+### 검증
+- [x] npm run build 통과(1846 modules), oxlint 클린. dev 200
+- [x] 헤드리스 Chrome 실제 렌더 확인: 모바일(폭 매칭 500px 뷰포트)에서 컨트롤바+기기(스크린/현재금액·현금·노란버튼·카드·QR 전부+증명서·지문 네온 띠) 다 보이고 대시보드/AI/기록 없음, 세로 중앙. 데스크톱(1280) 렌더는 기존과 동일(3패널+상태라벨+개인별기록 버튼)
+- [x] **트레이드오프 명시**: 1040px 기기를 폰 폭(≈390)에 꽉 채우면 uniform scale ≈0.36 → 스크린 버튼 27px(44px 목표 미달), 라벨도 작아짐. "기기 폭 꽉 채움+하드웨어 컬럼 전체 노출" 지시를 우선했고 44px와는 동시 충족 불가(스크린만 키우면 하드웨어 컬럼이 화면 밖). 플로우 탭 완주는 가능. DESIGN.md에 트레이드오프 기록
+
 ## 완료 (FIX-M: 개인별 기록 고정 데모데이터 전환 + 진입 버튼 분리 배치)
 
 ### 1 데이터 소스를 프론트 고정값으로 되돌림

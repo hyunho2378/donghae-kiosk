@@ -23,7 +23,8 @@ function Switch({ label, on, onToggle }) {
   )
 }
 
-function ModeControlBar({ mode, dispatch, onReset }) {
+// compact(PROMPT 10 모바일): 폭이 좁으니 gap/padding 축소 + 줄바꿈 허용 + 상태 라벨 생략. 데스크톱은 기존 그대로.
+function ModeControlBar({ mode, dispatch, onReset, compact = false }) {
   const isReal = !mode.helpOn && !mode.timeLimitOn
   const statusLabel = isReal
     ? '실제 기기 모드'
@@ -35,8 +36,12 @@ function ModeControlBar({ mode, dispatch, onReset }) {
 
   return (
     <div
-      className="flex items-center gap-6 border-b border-dash-border bg-dash-surface px-6"
-      style={{ height: layout.controlBarHeight }}
+      className={
+        compact
+          ? 'flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-dash-border bg-dash-surface px-3 py-1.5'
+          : 'flex items-center gap-6 border-b border-dash-border bg-dash-surface px-6'
+      }
+      style={compact ? undefined : { height: layout.controlBarHeight }}
     >
       <button
         type="button"
@@ -66,7 +71,9 @@ function ModeControlBar({ mode, dispatch, onReset }) {
         실제 모드
       </button>
 
-      <span className="ml-auto text-dash-small text-dash-text-secondary">{statusLabel}</span>
+      {!compact && (
+        <span className="ml-auto text-dash-small text-dash-text-secondary">{statusLabel}</span>
+      )}
     </div>
   )
 }

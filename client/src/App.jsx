@@ -2,7 +2,7 @@ import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
 import { sessionReducer, initialSessionState } from './state/sessionReducer.js'
 import { eventsReducer, initialEventsState } from './state/eventsReducer.js'
 import { modeReducer, initialModeState } from './state/modeReducer.js'
-import { layout, timing } from './tokens.js'
+import { colors, layout, timing } from './tokens.js'
 import { helpHints } from './data/helpHints.js'
 import KioskDevice from './components/kiosk/chassis/KioskDevice.jsx'
 import KioskCamera from './components/kiosk/chassis/KioskCamera.jsx'
@@ -80,6 +80,16 @@ function App() {
     return () => window.removeEventListener('resize', updateScale)
   }, [])
 
+  // 뷰포트 폭 추적 → 768px 미만이면 '모바일 키오스크 전용 모드'로 분기 (PROMPT 10).
+  // 데스크톱 레이아웃/로직은 일절 바꾸지 않고, 아래 return에서 모바일 트리만 별도로 조립한다.
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth)
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+  const isMobile = viewportWidth < 768
+
   // 세션 화면 전환 → 대시보드 이벤트 동기화 (실제 이벤트 1개를 계속 재사용)
   useEffect(() => {
     const step = session.step
@@ -124,12 +134,14 @@ function App() {
 
   // 매초 TICK — 상시 구동(시뮬레이션 시니어 B~F는 키오스크와 무관하게 계속 진행).
   // 실제 세션(A)은 리듀서에서 activeEventId일 때만 갱신되므로 상시 틱이어도 안전.
+  // 모바일(PROMPT 10)에서는 대시보드가 없으므로 B~F 시뮬레이션 틱 자체를 돌리지 않는다(불필요 연산 제거).
   useEffect(() => {
+    if (isMobile) return undefined
     const timer = setInterval(() => {
       eventsDispatch({ type: 'TICK', now: Date.now() })
     }, 1000)
     return () => clearInterval(timer)
-  }, [])
+  }, [isMobile])
 
   // ── 시간제한 모드(30초 무입력 초기화) — 8초 막힘 판정과 독립 ──
   // 발급 연출 구간(issuePhase !== idle)에는 적용하지 않는다(발표자 통제).
@@ -310,6 +322,60 @@ function App() {
       default:
         return null
     }
+  }
+
+  // ── 모바일 키오스크 전용 모드 (PROMPT 10) ── 대시보드/AI/기록 없이 기기만 체험.
+  // 데스크톱 트리(아래 return)는 그대로 두고, 폭<768일 때만 이 분기로 조립한다.
+  if (isMobile) {
+    const mobileCameraView =
+      session.issuePhase !== 'idle' ? 'full' : session.step === 'S5' ? 'fingerprint' : 'screen'
+    const mobileAvailWidth = viewportWidth - 20 // 좌우 여백 합계 20px, 기기가 폭을 최대한 사용
+    const mobilePaperScale = Math.min(1.8, (viewportWidth - 44) / 300) // 종이 중앙 확대가 폭을 넘지 않게
+
+    return (
+      <div
+        className="flex h-screen w-screen flex-col overflow-hidden"
+        style={{ backgroundColor: colors.kiosk['stage-bg'] }}
+        onClick={registerActivity}
+      >
+        <ModeControlBar mode={mode} dispatch={modeDispatch} onReset={handleSimulatorReset} compact />
+        <div className="relative min-h-0 flex-1">
+          <div className="h-full overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center py-4">
+              <KioskCamera view={mobileCameraView} mobile availWidth={mobileAvailWidth}>
+                <KioskDevice
+                  fingerprintActive={session.step === 'S5'}
+                  onFingerprint={() => dispatch({ type: 'SHOW_MODAL', modal: 'M6' })}
+                  fingerprintHighlight={mode.helpOn && session.step === 'S5'}
+                  issuePhase={session.issuePhase}
+                  onPaperClick={handlePaperClick}
+                  mainScreen={session.step === 'S1'}
+                >
+                  {renderScreen()}
+                  {renderModal()}
+                </KioskDevice>
+              </KioskCamera>
+            </div>
+          </div>
+
+          {/* 종이 수령 연출 (기기 뷰포트 중앙, 카메라 위) */}
+          {session.issuePhase === 'receiving' && (
+            <PaperReceiveOverlay onDone={handlePaperReceive} targetScale={mobilePaperScale} />
+          )}
+
+          {/* 도움말 말풍선 (발급 연출 중엔 숨김, S5는 상단 배치) */}
+          {mode.helpOn && session.issuePhase === 'idle' && helpHints[session.step] && (
+            <HelpOverlay
+              text={helpHints[session.step].text}
+              position={helpHints[session.step].position}
+            />
+          )}
+
+          {/* 시간제한 경고 (마지막 10초) */}
+          {warnSeconds != null && <TimeoutWarning seconds={warnSeconds} />}
+        </div>
+      </div>
+    )
   }
 
   return (
