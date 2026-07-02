@@ -9,33 +9,33 @@ function CertificateOutlet({ issuePhase, onPaperClick }) {
   const { neonAccent, glossBlack, bodyGradBottom } = chassisColors
   return (
     <div className="flex w-full flex-col items-center gap-2">
-      {/* 라벨(프린터 아이콘) */}
-      <div className="flex items-center gap-1.5">
-        <Printer size={16} color={chassisColors.labelText} />
-        <HardwareLabel>증명서</HardwareLabel>
+      {/* 라벨(프린터 아이콘) — FIX-I 확대 */}
+      <div className="flex items-center gap-2">
+        <Printer size={22} color={chassisColors.labelText} />
+        <HardwareLabel large>증명서</HardwareLabel>
       </div>
 
-      <div className="flex w-full items-center gap-2">
-        {/* 빨간 »»» 출력 방향 화살표 */}
+      <div className="flex w-full items-center gap-2.5">
+        {/* 빨간 »»» 출력 방향 화살표 (커진 슬롯에 비례) */}
         <span
-          className="shrink-0 text-[20px] font-extrabold leading-none"
-          style={{ color: neonAccent, textShadow: `0 0 6px ${neonAccent}` }}
+          className="shrink-0 text-[26px] font-extrabold leading-none"
+          style={{ color: neonAccent, textShadow: `0 0 8px ${neonAccent}` }}
         >
           »»»
         </span>
 
-        {/* 와이드 슬롯 (빨간 네온 링) + 종이 출력 클립 */}
+        {/* 와이드 슬롯 (빨간 네온 링, FIX-I 두께↑) + 종이 출력 클립(마스크·애니메이션 로직 그대로) */}
         <div className="relative flex-1">
           <div
-            className="relative z-10 w-full rounded-md p-2"
+            className="relative z-10 w-full rounded-md p-2.5"
             style={{
               backgroundColor: glossBlack,
-              border: `2px solid ${neonAccent}`,
-              boxShadow: `0 0 9px ${neonAccent}`,
+              border: `3px solid ${neonAccent}`,
+              boxShadow: `0 0 12px ${neonAccent}`,
             }}
           >
             {/* 슬롯 입구(어두운 홈) */}
-            <div className="h-3 w-full rounded-full" style={{ backgroundColor: bodyGradBottom }} />
+            <div className="h-4 w-full rounded-full" style={{ backgroundColor: bodyGradBottom }} />
           </div>
 
           {/* 클리핑 영역: 슬롯 바로 아래. 종이가 슬롯 안(translateY -100%)에서 시작해 드러나며 내려온다. */}

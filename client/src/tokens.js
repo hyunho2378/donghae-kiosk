@@ -16,6 +16,7 @@ export const colors = {
     'main-bg': '#0A0A0A', // S1 스크린 콘텐츠 배경(실물 순검정에 가까움)
     'main-bar': '#000000', // S1 상단 티커 바(스크린 검정과 이어지되 약간 더 어둡게)
     'main-accent-blue': '#5BA3E8', // S1 하단 현금가능/카드가능 하늘색
+    'stage-bg': '#5A5D63', // 좌측 기기 바깥 배경(중간 회색) — 검정 몸체 실루엣 대비 확보 (FIX-I)
   },
   dash: {
     bg: '#F7F8FA',

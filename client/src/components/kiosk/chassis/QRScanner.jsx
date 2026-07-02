@@ -5,10 +5,10 @@ import HardwareLabel from './HardwareLabel.jsx'
 function QRScanner() {
   const { glossBlack, metalSilver, baseSilverDark, canopy } = chassisColors
   return (
-    <div className="flex w-full flex-col items-center gap-1">
-      <HardwareLabel>QR코드 인식하는 곳</HardwareLabel>
+    <div className="flex w-full flex-col items-center gap-1.5">
+      <HardwareLabel large>QR코드 인식하는 곳</HardwareLabel>
       <div
-        className="flex h-16 w-16 items-center justify-center rounded-md"
+        className="flex h-[90px] w-[90px] items-center justify-center rounded-lg"
         style={{
           backgroundColor: glossBlack,
           border: '1px solid rgba(255,255,255,0.12)',
@@ -17,7 +17,7 @@ function QRScanner() {
       >
         {/* 밝은 스캐너 창 */}
         <div
-          className="h-9 w-9 rounded-[3px]"
+          className="h-[50px] w-[50px] rounded-[4px]"
           style={{
             background: `linear-gradient(135deg, ${canopy} 0%, ${metalSilver} 55%, ${baseSilverDark} 100%)`,
             boxShadow: 'inset 0 0 4px rgba(0,0,0,0.35)',

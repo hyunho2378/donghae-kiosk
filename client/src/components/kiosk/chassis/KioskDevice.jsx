@@ -71,7 +71,7 @@ function KioskDevice({
           borderTop: '1px solid rgba(255,255,255,0.06)',
         }}
       >
-        <div className="w-[430px]">
+        <div className="w-[540px]">
           <CertificateOutlet issuePhase={issuePhase} onPaperClick={onPaperClick} />
         </div>
         <FingerprintScanner
