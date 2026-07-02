@@ -55,6 +55,11 @@ function App() {
   const selectedEvent =
     eventsState.events.find((e) => e.id === eventsState.selectedId) ?? null
 
+  // 등장한 시니어만(시뮬레이션은 startDelay 지나야 appeared) A→F 순으로 정렬
+  const visibleEvents = eventsState.events
+    .filter((e) => e.appeared !== false)
+    .sort((a, b) => a.avatar.localeCompare(b.avatar))
+
   // 1600x1000 고정 캔버스를 창 크기에 비율 유지로 축소(scale-to-fit).
   // 개별 UI 요소가 아니라 최상위 데모 뷰포트 스케일이므로 scale() 예외 허용(DESIGN.md 명시).
   const [scale, setScale] = useState(1)
@@ -93,7 +98,14 @@ function App() {
       activeEventIdRef.current = id
       eventsDispatch({
         type: 'CREATE_EVENT',
-        event: { id, screenId: step, screenLabel: SCREEN_LABELS[step], enteredAt: Date.now() },
+        event: {
+          id,
+          screenId: step,
+          screenLabel: SCREEN_LABELS[step],
+          enteredAt: Date.now(),
+          service: '졸업증명서 발급', // 시니어 A(실제 조작)의 서비스
+          avatar: 'A',
+        },
       })
     } else {
       // 이후 화면 전환 → 같은 이벤트를 현재 화면으로 갱신(타이머/분석 캐시 초기화)
@@ -107,14 +119,14 @@ function App() {
     }
   }, [session.step])
 
-  // S3~S12 체류 중 매초 경과 시간 갱신 (8초 초과 시 리듀서가 막힘 전환)
+  // 매초 TICK — 상시 구동(시뮬레이션 시니어 B~F는 키오스크와 무관하게 계속 진행).
+  // 실제 세션(A)은 리듀서에서 activeEventId일 때만 갱신되므로 상시 틱이어도 안전.
   useEffect(() => {
-    if (!FLOW_STEPS.includes(session.step)) return undefined
     const timer = setInterval(() => {
       eventsDispatch({ type: 'TICK', now: Date.now() })
     }, 1000)
     return () => clearInterval(timer)
-  }, [session.step])
+  }, [])
 
   // ── 시간제한 모드(30초 무입력 초기화) — 8초 막힘 판정과 독립 ──
   // 발급 연출 구간(issuePhase !== idle)에는 적용하지 않는다(발표자 통제).
@@ -338,16 +350,16 @@ function App() {
           className="flex flex-col"
           style={{ width: layout.rightPanelWidth, height: layout.kioskPanelHeight }}
         >
-        <div style={{ height: layout.dashboardPanelHeight }}>
+        <div style={{ height: layout.dashboardHeight }}>
           <DashboardPanel
-            events={eventsState.events}
+            events={visibleEvents}
             selectedId={eventsState.selectedId}
             onSelect={(id) => eventsDispatch({ type: 'SELECT_EVENT', id })}
           />
         </div>
           <div
             className="border-t border-dash-border"
-            style={{ height: layout.dashboardPanelHeight }}
+            style={{ height: layout.aiPanelHeight }}
           >
             <AIPanel selectedEvent={selectedEvent} dispatch={eventsDispatch} />
           </div>

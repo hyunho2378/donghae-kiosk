@@ -2,7 +2,7 @@
 // - 개인정보는 회색 바로 가림(실물 사진이 회색 바로 가린 방식만 차용)
 // - 클릭 시 수령 처리(페이드 아웃 후 onReceive)
 import { useEffect, useRef, useState } from 'react'
-import { chassisColors } from '../../../tokens.js'
+import { chassisColors, timing } from '../../../tokens.js'
 
 // 개인정보 가림 회색 바
 function RedactBar({ w }) {
@@ -44,7 +44,11 @@ function CertificatePaper({ onReceive }) {
       className={`block w-[300px] cursor-pointer rounded-[2px] bg-kiosk-white px-8 py-6 text-left ${
         leaving ? 'paper-leaving' : 'paper-entering'
       }`}
-      style={{ boxShadow: '0 8px 20px rgba(0,0,0,0.35)' }}
+      style={{
+        boxShadow: '0 8px 20px rgba(0,0,0,0.35)',
+        // 슬라이드 시간은 토큰으로 (FIX-C, 0.8초). 수령 페이드는 0.4초 고정.
+        animationDuration: leaving ? '400ms' : `${timing.paperSlideMs}ms`,
+      }}
     >
       {/* 타이틀 */}
       <p className="mb-5 text-center text-[15px] font-bold tracking-[0.3em] text-kiosk-gray-text">

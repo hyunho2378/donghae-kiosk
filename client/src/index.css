@@ -60,3 +60,26 @@ body {
 .paper-leaving {
   animation: paper-leave 0.4s ease-in forwards;
 }
+
+/* 막힘 전환 순간 좌우 흔들림 (0.4초 1회 전용, 남용 금지) */
+@keyframes card-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.card-shake {
+  animation: card-shake 0.4s ease-in-out 1;
+}
+
+/* 진행중 상태 뱃지 은은한 깜빡임 (1.2초 주기) */
+@keyframes badge-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.badge-blink {
+  animation: badge-blink 1.2s ease-in-out infinite;
+}

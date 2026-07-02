@@ -15,12 +15,12 @@ function AIPrescriptionCard({ analysis, elapsedMs }) {
 
       <div className="mb-4">
         <p className="mb-1 text-dash-small text-dash-text-secondary">추정 원인</p>
-        <p className="text-dash-ai-body text-dash-text-primary">{analysis.cause}</p>
+        <p className="text-dash-ai-body font-bold text-dash-primary">{analysis.cause}</p>
       </div>
 
       <div>
         <p className="mb-1 text-dash-small text-dash-text-secondary">강사 제안</p>
-        <p className="text-dash-ai-body text-dash-text-primary">{analysis.suggestion}</p>
+        <p className="text-dash-ai-body font-bold text-dash-primary">{analysis.suggestion}</p>
       </div>
     </div>
   )

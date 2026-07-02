@@ -16,6 +16,30 @@
 
 - [ ] (다음 세션에서 PROMPT 08 시작 — 2회차 재방문 시뮬레이션: 이전 막힘 지점 기억)
 
+## 완료 (FIX-C: 좌측 줌/타이밍 + 우측 강사용 대시보드 전면 개편)
+
+### PART 1 좌측
+- [x] FIX1 줌: deviceTopHeight 1000→956(=카메라 가용높이) → 줌인 SCREEN_SCALE=1로 폭 꽉 참. 줌아웃 FULL_SCALE 0.95→0.98
+- [x] FIX2 발급 속도: timing cameraMs 500 / modalPrinting 3000→1200 / paperSlideMs 800. CertificatePaper animationDuration 인라인 토큰화. 발급→종이 등장 ~2초
+### PART 2 대시보드
+- [x] FIX3 제목 "시니어 교육 강사용 대시보드", 우측 상하 500:500→600:400(layout dashboardHeight/aiPanelHeight)
+- [x] FIX4 더미 폐기 → simulatedSeniors.js(B~F, 서비스/steps/timeline/outcome/startDelay). eventsReducer TICK 확장(advanceSim, demoStartAt), 상시 TICK. node 검증 13/13(등장 시차/진행/막힘/완료). A는 실제 세션(service '졸업증명서 발급', avatar 'A')
+- [x] aiMockResponses에 GEN_MENU/ID/FINGERPRINT/OPTION/FEE/DONE 6종 추가(B~F 클릭 분석)
+- [x] FIX5 카드 개편: [문자 아바타(A파랑+실습마커/B~F회색)][서비스명+현재단계+진입][상태뱃지][큰 경과초]
+- [x] FIX6 상태 피드백: 진행중 뱃지 badge-blink(1.2s), 완료 연초록 배경+CircleCheck, 막힘 전환 순간 card-shake 1회(prevStatus ref로 감지)
+- [x] FIX7 카드 4변 테두리: 스크롤 컨테이너 pr-1→px-1로 좌변 클립 방지
+- [x] FIX8 AI 카드 원인/제안 본문 font-bold + dash-primary(파랑)
+- [x] tokens 신규: timing(cameraMs/paperSlideMs), layout(dashboardHeight 600/aiPanelHeight 400/deviceTopHeight 956), dash status-done-bg. dummyEvents.js 삭제
+- [x] npm run build 통과(1834), node 검증 13/13, dev 200
+
+## 결정 사항 추가
+
+- 시니어 시뮬레이션은 별도 엔진 없이 eventsReducer TICK 확장으로 구동(과설계 금지 준수). demoStartAt(첫 틱) 기준 startDelay 후 등장, timeline 따라 단계 전진, 막힘 시니어는 마지막 단계 8초 후 stuck
+- TICK 상시 구동으로 변경(B~F가 키오스크와 무관하게 진행). 실제 A는 리듀서에서 activeEventId 가드라 안전
+- 완료 경과초는 마지막 단계 체류값으로 고정(0초 방지), done은 빨강 제외
+- 카드 shake는 prevStatusRef로 progress→stuck 전환 1회만 트리거(계속 흔들리지 않음)
+- 줌인 폭 꽉 채움은 deviceTopHeight를 카메라 가용높이와 동일(956)하게 맞춰 SCREEN_SCALE=1 달성
+
 ## 완료 (FIX-B: 줌/종이/홈버튼/대시보드/AI 로딩 6건)
 
 - [x] FIX1 기기 한 덩어리: KioskDevice 외곽에 bodyBottom 베이스 배경(흰 배경 새는 것 방지) + 하단부 상단 seam 보더. 하단 높이 700→480 축소

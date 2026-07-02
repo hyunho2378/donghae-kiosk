@@ -8,9 +8,11 @@ const CONFIG = {
 
 function StatusBadge({ status }) {
   const cfg = CONFIG[status] ?? CONFIG.progress
+  // 진행중은 은은하게 깜빡임(FIX-C). 막힘/완료는 정지.
+  const blink = status === 'progress' ? 'badge-blink' : ''
   return (
     <span
-      className={`inline-block rounded-dash-card px-2 py-1 text-dash-small transition-colors duration-200 ${cfg.className}`}
+      className={`inline-block rounded-dash-card px-2 py-1 text-dash-small transition-colors duration-200 ${cfg.className} ${blink}`}
     >
       {cfg.label}
     </span>

@@ -1,14 +1,67 @@
 // 대시보드 이벤트 목록 리듀서 (IA.md "대시보드 영역", "막힘 판정 로직")
-// - 더미 이벤트 위에 실제 세션 이벤트 1개가 얹힌다.
-// - activeEventId: 현재 틱으로 갱신되는 실제 이벤트 (S3 진입 시 생성, 완료 시 해제)
+// - 시니어 A(실제 키오스크 세션) + B~F(시뮬레이션)이 한 목록에 실시간으로.
+// - activeEventId: 실제 세션(A) 이벤트. B~F는 kind 'sim'으로 TICK이 스크립트대로 구동.
 
-import { dummyEvents } from '../data/dummyEvents.js'
+import { simulatedSeniors } from '../data/simulatedSeniors.js'
 import { stuckThresholdMs } from '../tokens.js'
 
 export const initialEventsState = {
-  events: dummyEvents,
+  events: simulatedSeniors, // B~F 사전 로드(appeared:false, startDelay 후 등장)
   selectedId: null,
   activeEventId: null,
+  demoStartAt: null, // 첫 TICK 시각 → 시뮬레이션 시계 기준점
+}
+
+// 시뮬레이션 시니어 1명을 현재 시각(now) 기준으로 한 스텝 전진
+function advanceSim(e, now, demoStartAt) {
+  // 아직 등장 전
+  if (!e.appeared) {
+    if (now >= demoStartAt + e.startDelay * 1000) {
+      return { ...e, appeared: true, enteredAt: now, elapsedMs: 0, status: 'progress' }
+    }
+    return e
+  }
+  if (e.status === 'done') return e
+
+  const dwell = now - e.enteredAt
+  const lastIndex = e.steps.length - 1
+
+  // 마지막 단계: 완료 시니어는 이미 done 처리됨. 막힘 시니어는 8초 후 막힘(계속 카운트).
+  if (e.stepIndex >= lastIndex) {
+    const status = e.outcome === '막힘' && dwell >= stuckThresholdMs ? 'stuck' : e.status
+    return { ...e, elapsedMs: dwell, status }
+  }
+
+  // 중간 단계: timeline 체류 시간 경과 시 다음 단계로
+  const stepDwellMs = e.timeline[e.stepIndex] * 1000
+  if (dwell >= stepDwellMs) {
+    const nextIndex = e.stepIndex + 1
+    const nextStep = e.steps[nextIndex]
+    const reachedTerminal = nextIndex === lastIndex
+    // 완료 시니어가 마지막 '발급 완료' 단계 도달 → 완료(경과 고정)
+    if (reachedTerminal && e.outcome === '완료') {
+      return {
+        ...e,
+        stepIndex: nextIndex,
+        screenId: nextStep.key,
+        screenLabel: nextStep.label,
+        status: 'done',
+        elapsedMs: dwell, // 마지막 단계 체류값으로 고정
+      }
+    }
+    return {
+      ...e,
+      stepIndex: nextIndex,
+      screenId: nextStep.key,
+      screenLabel: nextStep.label,
+      status: 'progress',
+      enteredAt: now,
+      elapsedMs: 0,
+      analysisStatus: 'idle',
+      analysis: null,
+    }
+  }
+  return { ...e, elapsedMs: dwell }
 }
 
 export function eventsReducer(state, action) {
@@ -49,18 +102,19 @@ export function eventsReducer(state, action) {
       }
     }
 
-    // 매초 경과 시간 갱신 + 8초 넘으면 진행중 → 막힘 (완료 이벤트는 갱신 안 함)
+    // 매초: 실제 세션(A) 경과 갱신 + 8초 막힘 판정 / 시뮬레이션 시니어(B~F) 스크립트 전진
     case 'TICK': {
-      return {
-        ...state,
-        events: state.events.map((e) => {
-          if (e.id !== state.activeEventId || e.status === 'done') return e
-          const elapsedMs = action.now - e.enteredAt
-          const status =
-            e.status === 'progress' && elapsedMs >= stuckThresholdMs ? 'stuck' : e.status
-          return { ...e, elapsedMs, status }
-        }),
-      }
+      const now = action.now
+      const demoStartAt = state.demoStartAt ?? now
+      const events = state.events.map((e) => {
+        if (e.kind === 'sim') return advanceSim(e, now, demoStartAt)
+        // 실제 세션(A): 활성 이벤트만, 완료는 갱신 안 함
+        if (e.id !== state.activeEventId || e.status === 'done') return e
+        const elapsedMs = now - e.enteredAt
+        const status = e.status === 'progress' && elapsedMs >= stuckThresholdMs ? 'stuck' : e.status
+        return { ...e, elapsedMs, status }
+      })
+      return { ...state, events, demoStartAt }
     }
 
     // 상태 강제 지정 (다음 클릭 시 완료). 완료된 실제 이벤트는 더 이상 틱 대상 아님.

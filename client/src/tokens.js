@@ -24,6 +24,7 @@ export const colors = {
     'status-stuck': '#DC2626',
     'status-stuck-bg': '#FEF2F2',
     'status-done': '#16A34A',
+    'status-done-bg': '#F0FDF4', // 완료 카드 연초록 배경 (FIX-C)
     'sample-badge': '#6B7280', // 예시 항목 구분(회색). 보라색 폐기(FIX-A). 키는 하위호환 위해 유지
   },
   // 도움말 모드(PROMPT 07) — 시뮬레이터 오버레이용. 키오스크 화면 자체엔 안 쓴다.
@@ -95,10 +96,11 @@ export const layout = {
   leftPanelWidth: 1040,
   rightPanelWidth: 560,
   kioskPanelHeight: 1000,
-  dashboardPanelHeight: 500,
+  dashboardHeight: 600, // 우측 상단 대시보드 (FIX-C, 500→600)
+  aiPanelHeight: 400, // 우측 하단 AI 분석 (FIX-C, 500→400)
   deviceFrameMaxHeight: 920,
   deviceFrameWidth: 690,
-  deviceTopHeight: 1000, // 기기 상단부(스크린+하드웨어 컬럼) 자연 높이
+  deviceTopHeight: 956, // 기기 상단부 자연 높이 = 카메라 가용 높이(1000-44) → 줌인 시 폭/높이 꽉 채움 (FIX-C)
   deviceBottomHeight: 480, // 기기 하단부(증명서 출구/시각장애인키보드/거스름돈) 높이 (FIX-B 축소)
   controlBarHeight: 44, // 좌측 최상단 데모 컨트롤 바 높이 (PROMPT 07)
 }
@@ -126,10 +128,12 @@ export const modalDim = 'rgba(0, 0, 0, 0.35)'
 export const timing = {
   modalServerConnecting: 1500, // M2 서버 접속 중
   modalVerificationDone: 1200, // M6 본인확인 완료
-  modalPrinting: 3000, // M13 인쇄중
+  modalPrinting: 1200, // M13 인쇄중 (FIX-C 단축)
   idleResetMs: 30000, // 시간제한 모드: 무입력 30초 시 S1 초기화 (PROMPT 07)
   aiMockDelayMin: 600, // AI 목업 최소 딜레이(FIX-B, 단축)
   aiMockDelayMax: 1200, // AI 목업 최대 딜레이(FIX-B, 단축)
+  cameraMs: 500, // 카메라 줌 전환(FIX-C, 0.9s→0.5s)
+  paperSlideMs: 800, // 종이 슬라이드 출력(FIX-C, 2s→0.8s)
 }
 
 // IA.md: 동일 화면 8초 체류 시 '막힘' 전환
