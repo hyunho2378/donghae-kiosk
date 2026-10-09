@@ -26,7 +26,7 @@ function advanceSim(e, now, demoStartAt) {
   const dwell = now - e.enteredAt
   const lastIndex = e.steps.length - 1
 
-  // 마지막 단계: 완료 시니어는 이미 done 처리됨. 막힘 시니어는 8초에 막힘 확정.
+  // 마지막 단계: 완료 시니어는 이미 done 처리됨. 막힘 시니어는 15초에 막힘 확정.
   if (e.stepIndex >= lastIndex) {
     if (e.status === 'stuck') return e // 이미 막힘 → 경과 고정(더 안 올라감)
     if (e.outcome === '막힘' && dwell >= stuckThresholdMs) {
@@ -84,7 +84,7 @@ export function eventsReducer(state, action) {
       return { ...state, events: [...withoutReal, event], activeEventId: event.id }
     }
 
-    // 화면 전환 시 같은 이벤트를 새 화면으로 갱신: 8초 타이머 재시작 + 분석 캐시 초기화
+    // 화면 전환 시 같은 이벤트를 새 화면으로 갱신: 15초 타이머 재시작 + 분석 캐시 초기화
     // (새 행을 만들지 않고 실제 이벤트 1개를 계속 재사용)
     case 'ADVANCE_SCREEN': {
       return {
@@ -106,7 +106,7 @@ export function eventsReducer(state, action) {
       }
     }
 
-    // 매초: 실제 세션(A) 경과 갱신 + 8초 막힘 판정 / 시뮬레이션 시니어(B~F) 스크립트 전진
+    // 매초: 실제 세션(A) 경과 갱신 + 15초 막힘 판정 / 시뮬레이션 시니어(B~F) 스크립트 전진
     case 'TICK': {
       const now = action.now
       const demoStartAt = state.demoStartAt ?? now

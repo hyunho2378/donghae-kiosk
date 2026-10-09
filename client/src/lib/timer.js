@@ -1,7 +1,7 @@
 // 경과 시간 판정 및 포맷 유틸
 import { stuckThresholdMs } from '../tokens.js'
 
-// IA.md 막힘 판정: 동일 화면 8초 이상 체류 시 true
+// IA.md 막힘 판정: 동일 화면 15초 이상 체류 시 true
 export function isStuck(elapsedMs) {
   return elapsedMs >= stuckThresholdMs
 }

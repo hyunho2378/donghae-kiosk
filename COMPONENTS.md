@@ -85,4 +85,4 @@ Vercel에 Express 서버가 배포되지 않아 `/api/records`가 404 나는 문
 ## 공통
 
 - `src/tokens.js` — DESIGN.md 컬러/타이포/간격 값 전부 export
-- `src/lib/timer.js` — 8초 체류 판정 및 경과 시간 카운트 유틸
+- `src/lib/timer.js` — 15초 체류 판정 및 경과 시간 카운트 유틸

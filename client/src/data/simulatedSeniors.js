@@ -12,7 +12,7 @@ export const GENERIC_STEPS = [
   { key: 'GEN_DONE', label: '발급 완료' },
 ]
 
-// outcome '완료' → 전체 단계, '막힘' → stuckAt 단계까지만(마지막 단계에서 8초 후 막힘)
+// outcome '완료' → 전체 단계, '막힘' → stuckAt 단계까지만(마지막 단계에서 15초 후 막힘)
 function makeSenior({ id, service, outcome, stuckAt, timeline, startDelay }) {
   const steps = outcome === '완료' ? GENERIC_STEPS : GENERIC_STEPS.slice(0, stuckAt + 1)
   return {

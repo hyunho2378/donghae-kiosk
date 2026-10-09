@@ -178,8 +178,8 @@ export const timing = {
   paperReceiveFadeMs: 300,
 }
 
-// IA.md: 동일 화면 8초 체류 시 '막힘' 전환
-export const stuckThresholdMs = 8000
+// IA.md: 동일 화면 15초 체류 시 '막힘' 전환
+export const stuckThresholdMs = 15000
 
 export const transition = {
   stuckState: '200ms ease',

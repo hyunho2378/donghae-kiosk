@@ -34,6 +34,6 @@
 
 ## 막힘 상태 강조 (EventItem)
 
-- 8초 경과 시점에 상태 뱃지 색상 전환(`dash-status-progress` → `dash-status-stuck`)
+- 15초 경과 시점에 상태 뱃지 색상 전환(`dash-status-progress` → `dash-status-stuck`)
 - 카드 테두리와 배경도 동시 전환
 - 전환 애니메이션은 200ms ease, 과도한 깜빡임 효과 사용 금지

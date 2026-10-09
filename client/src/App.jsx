@@ -40,7 +40,7 @@ const SCREEN_LABELS = {
   S12: '수수료 투입 및 발급',
 }
 
-// 8초 막힘 판정 대상 페이지 (S3~S12)
+// 15초 막힘 판정 대상 페이지 (S3~S12)
 const FLOW_STEPS = Object.keys(SCREEN_LABELS)
 
 function App() {
@@ -143,7 +143,7 @@ function App() {
     return () => clearInterval(timer)
   }, [isMobile])
 
-  // ── 시간제한 모드(30초 무입력 초기화) — 8초 막힘 판정과 독립 ──
+  // ── 시간제한 모드(30초 무입력 초기화) — 15초 막힘 판정과 독립 ──
   // 발급 연출 구간(issuePhase !== idle)에는 적용하지 않는다(발표자 통제).
   const timeoutActive =
     mode.timeLimitOn && FLOW_STEPS.includes(session.step) && session.issuePhase === 'idle'
